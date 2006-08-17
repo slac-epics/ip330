@@ -9,7 +9,7 @@ include $(TOP)/configure/CONFIG
 # build an ioc application
 
 
-LIBRARY_IOC = IP330
+LIBRARY_IOC_RTEMS = IP330
 
 # IP330.dbd will be created and installed
 DBD += IP330.dbd
