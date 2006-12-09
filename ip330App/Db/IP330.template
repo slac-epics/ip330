@@ -1,4 +1,4 @@
-record(ai, "LCLS:IP_TEST:AI:C$(CH)") {
+record(ai, "$(RECNAME)") {
   field(DESC, "Analog Input")
   field(SCAN, "I/O Intr")
   field(DTYP, "IP330")
