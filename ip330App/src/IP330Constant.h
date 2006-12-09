@@ -6,7 +6,7 @@ extern "C" {
 #endif  /* __cplusplus */
 
 /****************************************************************/
-/* $Id: IP330Constant.h,v 1.4 2006/08/10 18:29:33 pengs Exp $   */
+/* $Id: IP330Constant.h,v 1.5 2006/09/06 23:56:18 pengs Exp $   */
 /* This file defines the constant of IP330 ADC module           */
 /* Don't modify definition below this line                      */
 /* Author: Sheng Peng, pengs@slac.stanford.edu, 650-926-3847    */
@@ -62,6 +62,8 @@ static const char * channelsFormat = "ch%d-ch%d";
 static const char * scanModeName[N_SCANMODES] = {"disable","uniformCont","uniformSingle","burstCont","burstSingle","cvtOnExt"};
 
 #define N_TRGDIRS			2
+#define TRG_DIR_INPUT			0
+#define TRG_DIR_OUTPUT			1
 static const char * trgDirName[N_TRGDIRS] = {"Input","Output"};
 
 #define MAX_AVG_TIMES			256

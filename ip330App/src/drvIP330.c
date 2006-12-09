@@ -1,5 +1,5 @@
 /****************************************************************/
-/* $Id: drvIP330.c,v 1.8 2006/08/14 17:21:44 pengs Exp $        */
+/* $Id: drvIP330.c,v 1.9 2006/09/06 23:56:18 pengs Exp $        */
 /* This file implements driver support for IP330 ADC            */
 /* Author: Sheng Peng, pengs@slac.stanford.edu, 650-926-3847    */
 /****************************************************************/
@@ -540,7 +540,6 @@ static void ip330ISR(int arg)
     ipmIrqCmd(pcard->carrier, pcard->slot, 0, ipac_irqDisable);
     if(IP330_DRV_DEBUG) epicsInterruptContextMessage("IP330 ISR called\n");
 
-
     if(pcard->inp_typ == INP_TYP_DIFF)
     {/* Input type is differential, we have buf0 and buf1 */
         UINT16 newdata_flag0, newdata_flag1;
@@ -628,6 +627,10 @@ static void ip330ISR(int arg)
                     saved_ctrl = pcard->pHardware->controlReg;
                     pcard->pHardware->controlReg = (saved_ctrl) & 0xF8FF; /* Disable scan */
                     while( pcard->pHardware->controlReg & 0x0700 );
+
+                    /* Work around hardware bug of uniform continuous mode */
+                    if(pcard->scan_mode == SCAN_MODE_UNIFORMCONT) pcard->pHardware->startChannel = pcard->start_channel;
+
                     pcard->pHardware->controlReg = saved_ctrl;
                 }
                 scanIoRequest(pcard->ioscan);
@@ -656,7 +659,8 @@ void ip330StartConvert(IP330_ID pcard)
 {
     if(pcard)
     {
-        pcard->pHardware->startConvert = 0x1;
+        if(pcard->trg_dir == TRG_DIR_OUTPUT)
+            pcard->pHardware->startConvert = 0x1;
     }
 }
 
