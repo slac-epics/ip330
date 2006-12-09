@@ -2,16 +2,15 @@
 #define _INCLUDE_PTYPES_H_
 
 /****************************************************************/
-/* $Id: ptypes.h,v 1.3 2006/08/10 16:18:26 pengs Exp $          */
+/* $Id: ptypes.h,v 1.4 2006/09/06 23:57:24 pengs Exp $          */
 /* Common definition for size sensetive variable                */
 /* Author: Sheng Peng, pengs@slac.stanford.edu, 650-926-3847    */
 /****************************************************************/
 
-#ifndef VXWORKS
+#ifndef vxWorks
 
 typedef unsigned int UINT32;
 typedef unsigned short UINT16;
-typedef signed short SINT16;
 typedef unsigned char UINT8;
 
 #ifndef TRUE
@@ -23,5 +22,7 @@ typedef unsigned char UINT8;
 #endif
 
 #endif
+
+typedef signed short SINT16;
 
 #endif
