@@ -11,6 +11,7 @@ include $(TOP)/configure/CONFIG
 # Create and install (or just install)
 # databases, templates, substitutions like this
 DB += IP330.template
+DB += IP330BSA.template
 DB += IP330.db
 
 #----------------------------------------------------
