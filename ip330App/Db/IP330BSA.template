@@ -20,7 +20,7 @@ record(ai, "$(RECNAME)") {
   field(HSV,  "MINOR")
   field(LSV,  "MINOR")
   field(LLSV, "MAJOR")
-  field(LLSV, "$(FLNK)")
+  field(FLNK, "$(FLNK)")
 }
 
 
