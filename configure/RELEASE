@@ -1,25 +1,17 @@
-#RELEASE Location of external products
+# RELEASE Location of external products
 # Run "gnumake clean uninstall install" in the application
 # top directory each time this file is changed.
-#
-# NOTE: The build does not check dependancies on files
-# external to this application. Thus you should run
-# "gnumake clean uninstall install" in the top directory
-# each time EPICS_BASE, SNCSEQ, or any other external
-# module defined in the RELEASE file is rebuilt.
 
-TEMPLATE_TOP=$(EPICS_BASE)/templates/makeBaseApp/top
+EPICS_EXTENSIONS_RELEASE=/afs/slac/g/lcls/build/epics/extensions/extensions-R3-14-8-2
+EPICS_MODULES=/afs/slac/g/lcls/build/epics/modules
 
-# If you don't want to install into $(TOP) then
-# define INSTALL_LOCATION_APP here
-#INSTALL_LOCATION_APP=<fullpathname>
+#If using macro substitutions, point MSI at the binary:
+MSI=$(EPICS_EXTENSIONS_RELEASE)/bin/$(EPICS_HOST_ARCH)/msi
 
-#If using the sequencer, point SNCSEQ at its top directory:
-#SNCSEQ=$(EPICS_BASE)/../modules/soft/seq
+#  IPAC release V2-7 or later is required.
+IPAC=$(EPICS_MODULES)/ipac/ipac-R1-0-1
 
 # EPICS_BASE usually appears last so other apps can override stuff:
-EPICS_BASE=/afs/slac/g/lcls/build/epics/base/Devl
+EPICS_BASE_RELEASE=/afs/slac/g/lcls/build/epics/base/base-R1-0-0
+EPICS_BASE=$(EPICS_BASE_RELEASE)
 
-#Capfast users may need the following definitions
-#CAPFAST_TEMPLATES=
-#SCH2EDIF_PATH=
