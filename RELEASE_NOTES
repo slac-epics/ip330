@@ -1,0 +1,17 @@
+#==============================================================
+#
+#  Name: RELEASE_NOTES
+#
+#  Rem: This files describes release notes for
+#       the Acromag ip330 driver and device support.      
+#
+#  Auth: 29-Aug-2007, Sheng Peng         (PENGS)
+#  Rev:  dd-mmm-yyyy, Reviewer's Name    (USERNAME)
+#--------------------------------------------------------------
+#  Mod:
+#        dd-mmm-yyyy, First Lastname     (USERNAME):
+#          comment
+#
+#==============================================================
+#
+ip330-R1-0-0:   Initial release
