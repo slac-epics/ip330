@@ -9,7 +9,7 @@ EPICS_MODULES=/afs/slac/g/lcls/build/epics/modules
 MSI=$(EPICS_EXTENSIONS_RELEASE)/bin/$(EPICS_HOST_ARCH)/msi
 
 #  IPAC release V2-7 or later is required.
-IPAC=$(EPICS_MODULES)/ipac/ipac-R1-0-1
+IPAC=$(EPICS_MODULES)/ipac/ipac-R1-0-2
 
 # EPICS_BASE usually appears last so other apps can override stuff:
 EPICS_BASE_RELEASE=/afs/slac/g/lcls/build/epics/base/base-R1-0-0
