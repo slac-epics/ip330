@@ -9,9 +9,11 @@
 #  Rev:  dd-mmm-yyyy, Reviewer's Name    (USERNAME)
 #--------------------------------------------------------------
 #  Mod:
-#        dd-mmm-yyyy, First Lastname     (USERNAME):
-#          comment
+#        30-Aug-2007, K. Luchini         (LUCHINI):
+#          release ip330-R1-0-1
 #
 #==============================================================
 #
+ip330-R1-0-0:   Build with ipac-R1-0-2 instead of ipac-R1-0-1
+
 ip330-R1-0-0:   Initial release
