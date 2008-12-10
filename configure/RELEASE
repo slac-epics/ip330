@@ -15,7 +15,7 @@ TEMPLATE_TOP=$(EPICS_BASE)/templates/makeBaseApp/top
 
 # ==================================================================================
 #If using macro substitutions, point MSI at the binary:
-EXTENSIONS_MODULE_VERSION=extensions-R3-14-9
+EXTENSIONS_MODULE_VERSION=extensions-R3-14-8-2
 MSI=$(EPICS_SITE_TOP)/extensions/$(EXTENSIONS_MODULE_VERSION)/bin/$(EPICS_HOST_ARCH)/msi
 
 # ==================================================================================
@@ -29,13 +29,13 @@ EPICS_MODULES=$(EPICS_SITE_TOP)/modules
 # ==============================================================
 # Define the version of EPICS BASE that you will use
 # =============================================================
-BASE_MODULE_VERSION=base-R3-14-9-lcls1
+BASE_MODULE_VERSION=base-R3-14-8-2-lcls2
 
 # =============================================================
 # Define the version of modules needed by
 # IOC apps or other Support apps
 # =============================================================
-IPAC_MODULE_VERSION=ipac-R2-8-lcls4
+IPAC_MODULE_VERSION=ipac-R2-8-lcls3
 
 # ============================================================
 #  IPAC release V2-7 or later is required.
