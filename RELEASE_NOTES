@@ -9,6 +9,8 @@
 #  Rev:  dd-mmm-yyyy, Reviewer's Name    (USERNAME)
 #--------------------------------------------------------------
 #  Mod:
+#        29-Apr-2009, K. Luchini         (LUCHINI);
+#          release ip330-R2-0-0
 #        21-Feb-2008, K. Luchini         (LUCHINI);
 #          release ip330-R1-0-4
 #        08-Oct-2007, K. Luchini         (LUCHINI):
@@ -19,8 +21,11 @@
 #
 #==============================================================
 #
+ip330-R2-0-0:   Build with base-R3-14-9-lcls3 (RTEMS 4.9.1)
+
 ip330-R1-0-2-1: Small bug fix: Typo for determing the number of single-ended
-                channels was fixed. Build against EPICS R3.14.8.2 and ipac-R2-8-lcls3
+                channels was fixed. 
+                Build against  EPICS R3.14.8.2 and ipac-R2-8-lcls3
                 RTEMS version 4.7.1
 
 ip330-R1-0-4:   Build with base-R3-14-9-lcls1 (RTEMS 4.7.1)
