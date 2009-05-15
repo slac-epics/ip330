@@ -1,6 +1,6 @@
 #==============================================================================
 #
-# Abs:  Acromag IP-330 ADC template
+# Abs:  Acromag Analog Input IP-330 ADC template
 #
 # Name: IP330.substitutions
 #
@@ -13,23 +13,33 @@
 #
 #==============================================================================
 #
+# EGU	- Engineering Units
+# EGUF	- Engineering Units Full
+# EGUL	- Engineering Units Low
+# ADEL	- Archive Deadband Limit
+# MDEL	- Monitor Deadband Limit
+# HIHI	- HiHi Alarm Limit
+# HIGH	- High Alarm Limit
+# LOW	- Low  Alarm Limit
+# LOLO	- LoLo Alarm Limit
+#
 file IP330.template
 {
-  pattern { RECNAME,                CARD  ,  CH,  EGUF,  EGUL, ADEL,  MDEL, HIHI,  HIGH, LOW , LOLO,  EGU   }
-          { LCLS:IP_TEST:AI:C$(CH), "ai0" ,   0,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
-          { LCLS:IP_TEST:AI:C$(CH), "ai0" ,   1,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
-          { LCLS:IP_TEST:AI:C$(CH), "ai0" ,   2,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
-          { LCLS:IP_TEST:AI:C$(CH), "ai0" ,   3,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
-          { LCLS:IP_TEST:AI:C$(CH), "ai0" ,   4,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
-          { LCLS:IP_TEST:AI:C$(CH), "ai0" ,   5,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
-          { LCLS:IP_TEST:AI:C$(CH), "ai0" ,   6,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
-          { LCLS:IP_TEST:AI:C$(CH), "ai0" ,   7,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
-          { LCLS:IP_TEST:AI:C$(CH), "ai0" ,   8,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
-          { LCLS:IP_TEST:AI:C$(CH), "ai0" ,   9,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
-          { LCLS:IP_TEST:AI:C$(CH), "ai0" ,  10,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
-          { LCLS:IP_TEST:AI:C$(CH), "ai0" ,  11,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
-          { LCLS:IP_TEST:AI:C$(CH), "ai0" ,  12,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
-          { LCLS:IP_TEST:AI:C$(CH), "ai0" ,  13,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
-          { LCLS:IP_TEST:AI:C$(CH), "ai0" ,  14,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
-          { LCLS:IP_TEST:AI:C$(CH), "ai0" ,  15,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+  pattern { RECORDNAME,       CH, EGUF,  EGUL, ADEL,  MDEL, HIHI,  HIGH, LOW , LOLO,  EGU   }
+          { $(CARD):in$(CH), 0,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 1,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 2,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 3,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 4,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 5,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 6,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 7,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 8,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 9,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 10, 5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 11, 5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 12, 5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 13, 5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 14, 5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 15, 5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
 }

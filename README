@@ -17,8 +17,86 @@
 EPICS Verions:
 --------------
 This driver has currently been built and tested at SLAC with EPICS 3.14.8.2.
-This driver has implimented EPICS OSI function calls and is OSI complient.
+This driver has implemented EPICS OSI function calls and is OSI complient.
 
 Operating System:
 -------------------
 This driver has only been tested  under RTEMS. 
+
+How to use this module in your IOC
+------------------
+Copy the following files to your iocTop/<iocName>/<iocName>App/Db directory:
+	ip330App/Db/IP330.template
+	ip330App/Db/IP330.substitutions
+
+Add the following lines in your iocTop/<iocName>/<iocName>App/Db/Makefile:
+DB += IP330.template
+DB += IP330.db
+
+Add the following lines in your iocTop/<iocName>/<iocName>App/src/Makefile:
+<iocName>_DBD += IP330.dbd
+<iocName>_LIBS += IP330
+
+Add the following lines in your iocTop/<iocName>/iocBoot/ioc<iocName>/st.cmd:
+# Initialize IPAC carrier
+# The 2nd parameter is the base I/O address set by the jumpers on your carrier board
+# Make sure this address doesn't conflict with other boards.
+# Note: There are other ipac carrier modules besides the xy9660.
+# See the ipac module for options.
+ipacAddCarrier(&xy9660,"0x0000")
+
+#	Initialize IP330 analog input module
+#	See the Acromag IP330 User's manual in ip330/documentation
+#	for details on scan modes, triggers, timer, and other options.
+#	ip330Create(
+#		char	*	cardname,	Unique Identifier "ip330-1"
+#		UINT16		carrier,	Ipac Driver carrier card number, 0 for first ipac
+#		UINT16		slot,		Slot number on IP carrier, 0..3 for slots A..D
+#		char	*	a2d_range,	One of:	"-5to5D" "-10to10D" "0to5D" "0to10D"
+#										"-5to5S" "-10to10S" "0to5S" "0to10S"
+#		char	*	channels,	Format is "ch%d-ch%d", Ex: "ch0-ch15" or "ch21-ch31"
+#								Available range is 0 to 15/31 depending on Differential or
+#								Single inputs.
+#		UINT32		gainL,		The lower two bits is gain for channel0, then channel 1 ... 15
+#		UINT32		gainH,		The lower two bits is gain for channel16, then channel 17 ... 31
+#		char	*	scanmode,	Format is "%s-%s-%s", <mode>-<trigger>-Avg<avgCount>
+#								mode can be "uniformCont", "uniformSingle", "burstCont",
+#									"burstSingle", or "cvtOnExt"
+#								trigger can be "Input" or "Output"
+#									If mode is "cvtOnExt", trigger must be "Input"
+#								avgCount range is 1 to 256 and specifies how many samples to
+#									average over
+#								For low frequency applications without exacting timing
+#									requirements, a scanmode of "burstCont-Output-Avg1" is typical.
+#		char	*	timer,		Format is "x*y@8MHz" where x must be [64,255], y must be [1,65535]
+#								The timing interval can be calculated from (x*y)/8 in microseconds.
+#		UINT8		vector )	Interrupt vector should be 0x66
+ip330Create( "ai0", 0, 2, "-10to10D", "ch0-ch8", 0, 0, "burstCont-Output-Avg1", "80*3@8MHz", 0x66 )
+ip330StartConvertByName( "ai0" )
+
+# Load the EPICS records
+dbLoadRecords("db/IP330.db","CARD=ai0")
+
+EPICS PV Values:
+----------------------
+The default names assigned by the db template and substitution files
+in this module are shown below.  These can be customized after you copy the
+template and substitution files to your ioc.
+------------------
+PV Name:	Type:		Description:
+ai0:in0		bi			Analog Input 0
+ai0:in1		bi			Analog Input 1
+ai0:in2		bi			Analog Input 2
+ai0:in3		bi			Analog Input 3
+ai0:in4		bi			Analog Input 4
+ai0:in5		bi			Analog Input 5
+ai0:in6		bi			Analog Input 6
+ai0:in7		bi			Analog Input 7
+ai0:in8		bi			Analog Input 8
+ai0:in9		bi			Analog Input 9
+ai0:in10	bi			Analog Input 10
+ai0:in11	bi			Analog Input 11
+ai0:in12	bi			Analog Input 12
+ai0:in13	bi			Analog Input 13
+ai0:in14	bi			Analog Input 14
+ai0:in15	bi			Analog Input 15
