@@ -25,21 +25,23 @@ This driver has only been tested  under RTEMS.
 
 How to use this module in your IOC
 ------------------
-Copy the following files to your iocTop/<iocName>/<iocName>App/Db directory:
-	ip330App/Db/IP330.template
-	ip330App/Db/IP330.substitutions
+1.	Add the following lines in your iocTop/configure/RELEASE:
+IP330=$(EPICS_MODULES)/ip330/$(IP330_MODULE_VERSION)
 
-Add the following lines in your iocTop/<iocName>/<iocName>App/Db/Makefile:
-DB += IP330.template
+2.	Copy the following files to your iocTop/<iocName>/<iocName>App/Db directory:
+ip330App/Db/IP330.substitutions
+
+3.	Add the following lines in your iocTop/<iocName>/<iocName>App/Db/Makefile:
 DB += IP330.db
 
-Add the following lines in your iocTop/<iocName>/<iocName>App/src/Makefile:
+4.	Add the following lines in your iocTop/<iocName>/<iocName>App/src/Makefile:
 <iocName>_DBD += IP330.dbd
 <iocName>_LIBS += IP330
 
-Add the following lines in your iocTop/<iocName>/<iocName>App/src/<iocName>Main.cpp:
+5.	Add the following lines in your iocTop/<iocName>/<iocName>App/src/<iocName>Main.cpp:
 //  Include these lines to force linker to include xy9660 Ipac carrier
-//	Similar code can be used for other carrier's as needed.
+//	Note: There are other ipac carrier modules besides the xy9660.
+//	See the ipac module for options.
 #include "drvXy9660.h"
 extern "C"
 int addCarrier( const char * cardParams )
@@ -47,13 +49,11 @@ int addCarrier( const char * cardParams )
     return ipacAddXVME9660( cardParams );
 }
 
-Add the following lines in your iocTop/<iocName>/iocBoot/ioc<iocName>/st.cmd:
+6.	Add the following lines in your iocTop/<iocName>/iocBoot/ioc<iocName>/st.cmd:
 # Initialize IPAC carrier
 # The 2nd parameter is the base I/O address set by the jumpers on your carrier board
 # Make sure this address doesn't conflict with other boards.
-# Note: There are other ipac carrier modules besides the xy9660.
-# See the ipac module for options.
-ipacAddCarrier(&xy9660,"0x0000")
+addCarrier( "0x0000" )
 
 #	Initialize IP330 analog input module
 #	See the Acromag IP330 User's manual in ip330/documentation
@@ -86,6 +86,8 @@ ip330StartConvertByName( "ai0" )
 
 # Load the EPICS records
 dbLoadRecords("db/IP330.db","CARD=ai0")
+
+############################################################
 
 EPICS PV Values:
 ----------------------
