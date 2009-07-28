@@ -28,13 +28,10 @@ include $(EPICS_SITE_CONFIG)
 # Define the version of modules needed by
 # IOC apps or other Support apps
 # ===============================================================
-# NOTE: do not set, if you need a specific version it should be set
-# in RELEASE_SITE otherwise it will be set by release script.
+IPAC_MODULE_VERSION=R2.8.4-0.1.0
 
 # ============================================================
 # External Support
 # ============================================================
 # example: IPAC=$(EPICS_MODULES)/ipac/$(IPAC_MODULE_VERSION)
-# NOTE: it is normal for IPAC_MODULE_VERSION not to be defined, it will
-# be inserted by the release script.
 IPAC=$(EPICS_MODULES)/ipac/$(IPAC_MODULE_VERSION)
