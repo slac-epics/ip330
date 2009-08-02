@@ -1,0 +1,45 @@
+#==============================================================================
+#
+# Abs:  Acromag Analog Input IP-330 ADC template
+#
+# Name: IP330.substitutions
+#
+#  Auth: 10-Aug-2006, S. Peng         (PENG)
+#  Rev:  dd-mmm-yyyy, Reviewer's Name (USERNAME)
+#-----------------------------------------------------------------------------
+# Mod:
+#       dd-mmm-yyyy, First lastname (USERNAME):
+#         comment
+#
+#==============================================================================
+#
+# EGU	- Engineering Units
+# EGUF	- Engineering Units Full
+# EGUL	- Engineering Units Low
+# ADEL	- Archive Deadband Limit
+# MDEL	- Monitor Deadband Limit
+# HIHI	- HiHi Alarm Limit
+# HIGH	- High Alarm Limit
+# LOW	- Low  Alarm Limit
+# LOLO	- LoLo Alarm Limit
+#
+file IP330.template
+{
+  pattern { RECORDNAME,       CH, EGUF,  EGUL, ADEL,  MDEL, HIHI,  HIGH, LOW , LOLO,  EGU   }
+          { $(CARD):in$(CH), 0,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 1,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 2,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 3,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 4,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 5,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 6,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 7,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 8,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 9,  5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 10, 5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 11, 5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 12, 5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 13, 5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 14, 5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+          { $(CARD):in$(CH), 15, 5.0 ,  0.0 , 0.0 ,  0.0 , 4.5 ,  4.0 , 1.0 , 0.5 ,  Volts }
+}
