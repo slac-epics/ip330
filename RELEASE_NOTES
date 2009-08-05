@@ -21,6 +21,9 @@
 #
 #==============================================================
 #
+ip330-R2-0-1:   Add IP330BSA_TSE.template
+		Build with base-R3-14-9-lcls3 (RTEMS 4.9.1)
+
 ip330-R2-0-1:   Change the record to high cb priority
 		Build with base-R3-14-9-lcls3 (RTEMS 4.9.1)
 

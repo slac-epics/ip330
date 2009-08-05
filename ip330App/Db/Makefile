@@ -13,6 +13,7 @@ include $(TOP)/configure/CONFIG
 DB += IP330.template
 DB += IP330BSA.template
 DB += IP330.db
+DB += IP330BSA_TSE.template
 
 #----------------------------------------------------
 # If <anyname>.db template is not named <anyname>*.template add
