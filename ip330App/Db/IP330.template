@@ -4,6 +4,7 @@ record(ai, "$(RECNAME)") {
   field(DTYP, "IP330")
   field(INP,  "@$(CARD):$(CH):DATA")
   field(PREC, "3")
+  field(PRIO, "HIGH")
   field(EGUF, "$(EGUF)")
   field(EGUL, "$(EGUL)")
   field(HOPR, "$(EGUF)")
