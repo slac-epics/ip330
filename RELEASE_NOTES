@@ -21,6 +21,9 @@
 #
 #==============================================================
 #
+ip330-R2-1-2:   Build with base-R3-14-8-2-lcls5
+                Build with rtems-4.9.3
+
 ip330-R2-0-1:   Add IP330BSA_TSE.template
 		Build with base-R3-14-9-lcls3 (RTEMS 4.9.1)
 
