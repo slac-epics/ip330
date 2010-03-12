@@ -21,6 +21,8 @@
 #
 #==============================================================
 #
+ip330-R2-1-3:   Replace sprintf
+
 ip330-R2-1-2:   Build with base-R3-14-8-2-lcls5
                 Build with rtems-4.9.3
 
