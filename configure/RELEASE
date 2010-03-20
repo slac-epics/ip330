@@ -20,13 +20,13 @@ EPICS_MODULES=$(EPICS_SITE_TOP)/modules
 # ==============================================================
 # Define the version of EPICS BASE that you will use
 # =============================================================
-BASE_MODULE_VERSION=base-R3-14-8-2-lcls5
+BASE_MODULE_VERSION=base-R3-14-8-2-lcls6
 
 # =============================================================
 # Define the version of modules needed by
 # IOC apps or other Support apps
 # =============================================================
-IPAC_MODULE_VERSION=ipac-R2-8-lcls6
+IPAC_MODULE_VERSION=ipac-R2-8-lcls7
 
 # ============================================================
 #  IPAC release V2-7 or later is required.

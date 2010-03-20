@@ -9,6 +9,8 @@
 #  Rev:  dd-mmm-yyyy, Reviewer's Name    (USERNAME)
 #--------------------------------------------------------------
 #  Mod:
+#        20-Mar-2010, S. Hoobler         (SONYA);
+#          release ip330-R2-2-0
 #        29-Apr-2009, K. Luchini         (LUCHINI);
 #          release ip330-R2-0-0
 #        21-Feb-2008, K. Luchini         (LUCHINI);
@@ -21,6 +23,9 @@
 #
 #==============================================================
 #
+ip330-R2-2-0:   Build with base-R3-14-8-2-lcls6
+                Build with rtems-4.9.4
+
 ip330-R2-1-3:   Replace sprintf
 
 ip330-R2-1-2:   Build with base-R3-14-8-2-lcls5
