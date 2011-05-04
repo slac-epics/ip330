@@ -7,7 +7,7 @@
 #include "drvIP330Lib.h"
 #include "drvIP330Private.h"
 
-int     IP330_DRV_DEBUG = 1;
+int     IP330_DRV_DEBUG = 0;
 
 static IP330_CARD_LIST	ip330_card_list;
 static int		card_list_inited=0;
@@ -19,11 +19,13 @@ IP330_ID ip330GetByName(char * cardname)
 {
     IP330_ID pcard = NULL;
 
-    if(!card_list_inited)   return NULL;
+    if(!card_list_inited)  
+		return NULL;
 
     for(pcard=(IP330_ID)ellFirst((ELLLIST *)&ip330_card_list); pcard; pcard = (IP330_ID)ellNext((ELLNODE *)pcard))
     {
-        if ( 0 == strcmp(cardname, pcard->cardname) )   break;
+        if ( 0 == strcmp(cardname, pcard->cardname) )
+			break;
     }
 
     return pcard;
@@ -36,11 +38,13 @@ IP330_ID ip330GetByLocation(UINT16 carrier, UINT16 slot)
 {
     IP330_ID pcard = NULL;
 
-    if(!card_list_inited)   return NULL;
+    if(!card_list_inited)  
+		return NULL;
 
     for(pcard=(IP330_ID)ellFirst((ELLLIST *)&ip330_card_list); pcard; pcard = (IP330_ID)ellNext((ELLNODE *)pcard))
     {
-        if ( (carrier == pcard->carrier) && (slot == pcard->slot) )   break;
+        if ( (carrier == pcard->carrier) && (slot == pcard->slot) )  
+			break;
     }
 
     return pcard;
