@@ -23,6 +23,9 @@
 #
 #==============================================================
 #
+ip330-R2-2-1:   07-Sep-2011, K. Luchini  (LUCHINI):
+                Upgrade ipac from ipac-R2-8-lcls7 to ipac-R2-11-lcls1 
+
 ip330-R2-2-0:   Build with base-R3-14-8-2-lcls6
                 Build with rtems-4.9.4
 
