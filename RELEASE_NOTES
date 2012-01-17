@@ -22,7 +22,9 @@
 #          release ip330-R1-0-1
 #
 #==============================================================
-#
+#                
+ip330-R         Build with ipac-R2-11-lcls1
+             
 ip330-R2-2-2:   Build against EPICS R3-14-12 and use ipac-R2-8-lcls8
 
 ip330-R2-2-1:   07-Sep-2011, K. Luchini  (LUCHINI):
