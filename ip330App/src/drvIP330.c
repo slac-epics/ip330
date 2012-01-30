@@ -1,8 +1,11 @@
 /****************************************************************/
-/* $Id: drvIP330.c,v 1.2 2006/12/09 00:14:11 pengs Exp $        */
+/* $Id: drvIP330.c,v 1.4 2010/03/12 01:14:03 pengs Exp $        */
 /* This file implements driver support for IP330 ADC            */
 /* Author: Sheng Peng, pengs@slac.stanford.edu, 650-926-3847    */
 /****************************************************************/
+#ifdef vxWorks
+#include "logLib.h"
+#endif
 
 #include "drvIP330Lib.h"
 #include "drvIP330Private.h"
@@ -153,7 +156,7 @@ int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, ch
     {
         pcard->inp_range = loop%N_RANGES;
         pcard->inp_typ = loop/N_RANGES;
-        pcard->num_chnl = MAX_IP330_CHANNELS/(pcard->inp_typ + 1);
+        pcard->num_chnl = MAX_IP330_CHANNELS/(2 - pcard->inp_typ);
     }
     else
     {
@@ -643,8 +646,13 @@ static void ip330ISR(int arg)
     }
     else
     {
-        sprintf(pcard->debug_msg, "Unexpected new data flag 0x%08x\n", newdata_flag);
-        epicsInterruptContextMessage(pcard->debug_msg);
+#ifdef vxWorks
+        logMsg("Unexpected new data flag 0x%08x\n", newdata_flag, 0,0,0,0,0);
+#elif defined(__rtems__)
+        printf("Unexpected new data flag 0x%08x\n", newdata_flag);
+#else
+        epicsInterruptContextMessage("Unexpected new data flag\n");
+#endif
     }
 
     if(misseddata_flag != 0)
