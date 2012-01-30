@@ -1,6 +1,7 @@
 # RELEASE
 # Defines location of external products
 include $(TOP)/RELEASE_SITE
+TEMPLATE_TOP=$(BASE_SITE_TOP)/$(EPICS_BASE_VER)/templates/makeBaseApp/top
 
 # ===============================================================
 # Define the location and version of EPICS base
@@ -29,3 +30,4 @@ IPAC_MODULE_VERSION=R2.8.4-1.0.0
 # ============================================================
 # Example: IPAC=$(EPICS_MODULES)/ipac/$(IPAC_MODULE_VERSION)
 IPAC=$(EPICS_MODULES)/ipac/$(IPAC_MODULE_VERSION)
+

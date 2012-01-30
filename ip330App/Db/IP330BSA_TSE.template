@@ -1,11 +1,11 @@
-record(ai, "$(RECORDNAME)")
-{
-  field(DESC, "Analog Input")
+record(ai, "$(RECNAME)") {
+  field(DESC, "$(DESC)")
   field(SCAN, "I/O Intr")
-  field(DTYP, "ACROMAG-IP330")
+  field(DTYP, "IP330")
   field(INP,  "@$(CARD):$(CH):DATA")
   field(PREC, "3")
   field(PRIO, "HIGH")
+  field(TSE,  "$(TSE)")
   field(EGUF, "$(EGUF)")
   field(EGUL, "$(EGUL)")
   field(HOPR, "$(EGUF)")
