@@ -87,7 +87,7 @@ static int IP330_DevData_Init(dbCommon * precord, char * ioString)
     pcard = ip330GetByName(cardname);
     if( !pcard )
     {
-        errlogPrintf("Record %s IP330 %s is not registered!\n", precord->name, cardname);
+        errlogPrintf("Record %s: IP330 CARD \"%s\" not found!\n", precord->name, cardname);
         return -1;
     }
 
@@ -151,6 +151,12 @@ static long init_ai( struct aiRecord * pai)
 static long ai_ioint_info(int cmd,aiRecord *pai,IOSCANPVT *iopvt)
 {
     IP330_DEVDATA * pdevdata = (IP330_DEVDATA *)(pai->dpvt);
+    if ( pdevdata == NULL )
+    {
+        pai->udf=TRUE;
+        recGblSetSevr(pai, READ_ALARM, INVALID_ALARM);
+        return -1;
+    }
 
     *iopvt = *ip330GetIoScanPVT(pdevdata->pcard);
     return 0;
@@ -162,6 +168,13 @@ static long read_ai(struct aiRecord *pai)
 
     int status=-1;
     signed int tmp;
+
+    if ( pdevdata == NULL )
+    {
+        pai->udf=TRUE;
+        recGblSetSevr(pai, READ_ALARM, INVALID_ALARM);
+        return -1;
+    }
 
     switch(pdevdata->funcflag)
     {

@@ -7,7 +7,7 @@
 #include "drvIP330Lib.h"
 #include "drvIP330Private.h"
 
-int     IP330_DRV_DEBUG = 1;
+int     IP330_DRV_DEBUG = 0;
 
 static IP330_CARD_LIST	ip330_card_list;
 static int		card_list_inited=0;
@@ -19,11 +19,13 @@ IP330_ID ip330GetByName(char * cardname)
 {
     IP330_ID pcard = NULL;
 
-    if(!card_list_inited)   return NULL;
+    if(!card_list_inited)  
+		return NULL;
 
     for(pcard=(IP330_ID)ellFirst((ELLLIST *)&ip330_card_list); pcard; pcard = (IP330_ID)ellNext((ELLNODE *)pcard))
     {
-        if ( 0 == strcmp(cardname, pcard->cardname) )   break;
+        if ( 0 == strcmp(cardname, pcard->cardname) )
+			break;
     }
 
     return pcard;
@@ -36,11 +38,13 @@ IP330_ID ip330GetByLocation(UINT16 carrier, UINT16 slot)
 {
     IP330_ID pcard = NULL;
 
-    if(!card_list_inited)   return NULL;
+    if(!card_list_inited)  
+		return NULL;
 
     for(pcard=(IP330_ID)ellFirst((ELLLIST *)&ip330_card_list); pcard; pcard = (IP330_ID)ellNext((ELLNODE *)pcard))
     {
-        if ( (carrier == pcard->carrier) && (slot == pcard->slot) )   break;
+        if ( (carrier == pcard->carrier) && (slot == pcard->slot) )  
+			break;
     }
 
     return pcard;
@@ -693,13 +697,13 @@ static long IP330_EPICS_Report(int level)
         return 0;
     }
 
-    if(level > 0)   /* we only get into link list for detail when user wants */
+    if(level > 1)   /* we only get into link list for detail when user wants */
     {
         for(pcard=(IP330_ID)ellFirst((ELLLIST *)&ip330_card_list); pcard; pcard = (IP330_ID)ellNext((ELLNODE *)pcard))
         {
             printf("\tIP330 card %s is installed on carrier %d slot %d\n", pcard->cardname, pcard->carrier, pcard->slot);
 
-            if(level > 1)
+            if(level > 2)
             {
                 printf("\tInput range is %s, chnl%d~chnl%d is in use, scan mode is %s\n", rangeName[pcard->inp_typ*N_RANGES+pcard->inp_range], pcard->start_channel, pcard->end_channel, scanModeName[pcard->scan_mode]);
                 printf("\tTrigger direction is %s, average %d times %s reset, timer is %gus\n", trgDirName[pcard->trg_dir], pcard->avg_times, pcard->avg_rst?"with":"without", pcard->timer_prescaler*pcard->conversion_timer/8.0);

@@ -1,0 +1,18 @@
+# Archive list for IP330
+$(CARD):in0		5
+$(CARD):in1		5
+$(CARD):in2		5
+$(CARD):in3		5
+$(CARD):in4		5
+$(CARD):in5		5
+$(CARD):in6		5
+$(CARD):in7		5
+$(CARD):in8		5
+$(CARD):in9		5
+$(CARD):in10	5
+$(CARD):in11	5
+$(CARD):in12	5
+$(CARD):in13	5
+$(CARD):in14	5
+$(CARD):in15	5
+
