@@ -1,5 +1,5 @@
 /****************************************************************/
-/* $Id: drvIP330.c,v 1.9 2006/09/06 23:56:18 pengs Exp $        */
+/* $Id: drvIP330.c,v 1.2 2006/12/09 00:14:11 pengs Exp $        */
 /* This file implements driver support for IP330 ADC            */
 /* Author: Sheng Peng, pengs@slac.stanford.edu, 650-926-3847    */
 /****************************************************************/

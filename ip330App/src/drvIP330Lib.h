@@ -2,7 +2,7 @@
 #define _INCLUDE_DRV_IP330_LIB_H_
 
 /****************************************************************/
-/* $Id: drvIP330Lib.h,v 1.5 2006/08/10 16:18:36 pengs Exp $     */
+/* $Id: drvIP330Lib.h,v 1.1.1.1 2006/08/10 16:18:36 luchini Exp $     */
 /* This file defines the user interface of IP330 support        */
 /* Author: Sheng Peng, pengs@slac.stanford.edu, 650-926-3847    */
 /****************************************************************/

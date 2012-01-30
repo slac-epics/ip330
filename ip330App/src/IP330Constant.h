@@ -6,7 +6,7 @@ extern "C" {
 #endif  /* __cplusplus */
 
 /****************************************************************/
-/* $Id: IP330Constant.h,v 1.5 2006/09/06 23:56:18 pengs Exp $   */
+/* $Id: IP330Constant.h,v 1.2 2006/12/09 00:14:11 pengs Exp $   */
 /* This file defines the constant of IP330 ADC module           */
 /* Don't modify definition below this line                      */
 /* Author: Sheng Peng, pengs@slac.stanford.edu, 650-926-3847    */

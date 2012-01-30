@@ -1,5 +1,5 @@
 /****************************************************************/
-/* $Id: devAiIP330.c,v 1.5 2006/08/10 16:18:36 pengs Exp $      */
+/* $Id: devAiIP330.c,v 1.1.1.1 2006/08/10 16:18:36 luchini Exp $      */
 /* This file implements AI record device support for IP330 ADC  */
 /* Author: Sheng Peng, pengs@slac.stanford.edu, 650-926-3847    */
 /****************************************************************/

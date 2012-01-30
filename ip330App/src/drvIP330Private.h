@@ -6,7 +6,7 @@ extern "C" {
 #endif  /* __cplusplus */
 
 /******************************************************************/
-/* $Id: drvIP330Private.h,v 1.6 2006/08/10 16:18:05 pengs Exp $   */
+/* $Id: drvIP330Private.h,v 1.1.1.1 2006/08/10 16:18:05 luchini Exp $   */
 /* This file defines the internal hw/sw struct of IP330 ADC module*/
 /* Author: Sheng Peng, pengs@slac.stanford.edu, 650-926-3847      */
 /******************************************************************/

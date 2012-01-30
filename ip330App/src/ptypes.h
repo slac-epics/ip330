@@ -2,7 +2,7 @@
 #define _INCLUDE_PTYPES_H_
 
 /****************************************************************/
-/* $Id: ptypes.h,v 1.4 2006/09/06 23:57:24 pengs Exp $          */
+/* $Id: ptypes.h,v 1.2 2006/12/09 00:14:02 pengs Exp $          */
 /* Common definition for size sensetive variable                */
 /* Author: Sheng Peng, pengs@slac.stanford.edu, 650-926-3847    */
 /****************************************************************/
