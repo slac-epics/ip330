@@ -697,13 +697,13 @@ static long IP330_EPICS_Report(int level)
         return 0;
     }
 
-    if(level > 0)   /* we only get into link list for detail when user wants */
+    if(level > 1)   /* we only get into link list for detail when user wants */
     {
         for(pcard=(IP330_ID)ellFirst((ELLLIST *)&ip330_card_list); pcard; pcard = (IP330_ID)ellNext((ELLNODE *)pcard))
         {
             printf("\tIP330 card %s is installed on carrier %d slot %d\n", pcard->cardname, pcard->carrier, pcard->slot);
 
-            if(level > 1)
+            if(level > 2)
             {
                 printf("\tInput range is %s, chnl%d~chnl%d is in use, scan mode is %s\n", rangeName[pcard->inp_typ*N_RANGES+pcard->inp_range], pcard->start_channel, pcard->end_channel, scanModeName[pcard->scan_mode]);
                 printf("\tTrigger direction is %s, average %d times %s reset, timer is %gus\n", trgDirName[pcard->trg_dir], pcard->avg_times, pcard->avg_rst?"with":"without", pcard->timer_prescaler*pcard->conversion_timer/8.0);

@@ -15,8 +15,9 @@ DB += IP330BSA.template
 DB += IP330.db
 
 #----------------------------------------------------
-# If <anyname>.db template is not named <anyname>*.template add
-# <anyname>_TEMPLATE = <templatename>
+REQ += ip330-signal.tpl-req
+
+ARCHIVE += ip330-signal.tpl-arch
 
 include $(TOP)/configure/RULES
 #----------------------------------------
