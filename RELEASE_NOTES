@@ -23,6 +23,8 @@
 #
 #==============================================================
 #                
+ip330-R2-2-4: Build against ipac-R2-11_1-0 which builds for all targets
+
 ip330-R2-2-3:         Build with ipac-R2-11-lcls1
              
 ip330-R2-2-2:   Build against EPICS R3-14-12 and use ipac-R2-8-lcls8
