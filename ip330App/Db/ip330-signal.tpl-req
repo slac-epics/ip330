@@ -1,0 +1,15 @@
+# Autosave IP330 Analog Input Signal PV list
+$(SIG)
+$(SIG).ADEL
+$(SIG).DESC
+$(SIG).EGUF
+$(SIG).EGUL
+$(SIG).HHSV
+$(SIG).HOPR
+$(SIG).HSV
+$(SIG).HYST
+$(SIG).LLSV
+$(SIG).LOPR
+$(SIG).LSV
+$(SIG).MDEL
+$(SIG).SMOO
