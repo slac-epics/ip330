@@ -46,11 +46,22 @@ extern "C" {
 typedef struct IP330_HW_MAP
 {
   volatile UINT16   controlReg;		/* board control register */
+
+#ifdef	__BIG_ENDIAN__
   volatile UINT8    timerPrescaler;	/* timer prescaler register */
   volatile UINT8    intVector;		/* interrupt vector register */
+#else
+  volatile UINT8    intVector;		/* interrupt vector register */
+  volatile UINT8    timerPrescaler;	/* timer prescaler register */
+#endif
   volatile UINT16   conversionTimer;	/* conversion timer count register */
+#ifdef	__BIG_ENDIAN__
   volatile UINT8    endChannel;		/* end channel register */
   volatile UINT8    startChannel;	/* start channel register */
+#else
+  volatile UINT8    startChannel;	/* start channel register */
+  volatile UINT8    endChannel;		/* end channel register */
+#endif
   volatile UINT16   newData[2];		/* new data register */
   volatile UINT16   missedData[2];	/* missed data register */
   volatile UINT16   startConvert;	/* start conversion register */
