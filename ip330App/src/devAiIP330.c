@@ -23,6 +23,7 @@
 #include <devSup.h>
 #include <drvSup.h>
 #include <dbCommon.h>
+#include <errlog.h>
 #include <alarm.h>
 #include <cantProceed.h>
 #include <aiRecord.h>

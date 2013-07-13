@@ -9,6 +9,9 @@
 
 #include "drvIP330Lib.h"
 #include "drvIP330Private.h"
+#include "devLib.h"
+#include "errlog.h"
+#include "iocsh.h"
 
 int     IP330_DRV_DEBUG = 0;
 
@@ -91,7 +94,7 @@ int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, ch
 
     /* calloc will put everything zero */
     IP330_ID pcard = callocMustSucceed(1, sizeof(struct IP330_CARD), "ip330Create");
-   
+
     if(!card_list_inited)
     {/* Initialize the IP330 link list */
         ellInit( (ELLLIST *) &ip330_card_list);
@@ -172,7 +175,8 @@ int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, ch
         status = -1;
         goto FAIL;
     }
-    if( (start_channel < 0) || (start_channel >= pcard->num_chnl) || (end_channel < 0) || (end_channel >= pcard->num_chnl) || (start_channel > end_channel) )
+    if( (start_channel < 0) || (start_channel >= pcard->num_chnl) ||
+        (end_channel < 0) || (end_channel >= pcard->num_chnl) || (start_channel > end_channel) )
     {
         errlogPrintf ("ip330Create: channel range %s is illegal for device %s\n", channels, cardname);
         status = -1;
@@ -289,6 +293,7 @@ int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, ch
         goto FAIL;
     }
 
+    pcard->pHardware->controlReg = 0x0;
     ipmIrqCmd(carrier, slot, 0, ipac_irqEnable);
 
     ip330Calibrate(pcard);
@@ -337,7 +342,9 @@ void ip330Calibrate(IP330_ID pcard)
         pcard->pHardware->endChannel = MAX_IP330_CHANNELS-1;
 
         for (loopchnl = 0; loopchnl < MAX_IP330_CHANNELS; loopchnl++) 
+        {
             pcard->pHardware->gain[loopchnl] = loopgain;
+        }
 
         /* determine count_callo */
         pcard->pHardware->controlReg = calSettings[pcard->inp_range][loopgain].ctl_callo;
@@ -535,14 +542,20 @@ IOSCANPVT * ip330GetIoScanPVT(IP330_ID pcard)
 /* Read data from mailbox,  check dual level buffer if needed          */
 /* Put data into sum_data, stop scan and trigger record scan if needed */
 /***********************************************************************/
-static void ip330ISR(int arg)
+void ip330ISR(int arg)
 {
     int loop;
     UINT32 newdata_flag, misseddata_flag;
     UINT16 data[MAX_IP330_CHANNELS];
     UINT32 buf0_avail=0, buf1_avail=0;
+    UINT16 ctlReg;
+    char buf[32];
 
     IP330_ID pcard = (IP330_ID)arg;
+
+    /* disable ints on this module first */
+    ctlReg = pcard->pHardware->controlReg;
+    pcard->pHardware->controlReg = 0;
 
     ipmIrqCmd(pcard->carrier, pcard->slot, 0, ipac_irqDisable);
     if(IP330_DRV_DEBUG) epicsInterruptContextMessage("IP330 ISR called\n");
@@ -568,7 +581,7 @@ static void ip330ISR(int arg)
             }
             buf0_avail = 1;
         }
-
+#if	1
         if(newdata_flag1 == pcard->chnl_mask)
         {/* Read Data from buf1 */
             for(loop = pcard->start_channel; loop <= pcard->end_channel; loop++)
@@ -577,6 +590,7 @@ static void ip330ISR(int arg)
             }
             buf1_avail = 1;
         }
+#endif
     }
     else
     {/* Input type is single-end, there is only buf0 */
@@ -657,11 +671,14 @@ static void ip330ISR(int arg)
 
     if(misseddata_flag != 0)
     {
-        epicsInterruptContextMessage("Missed data flag is set\n");
+        sprintf(buf, "Missed data flag 0x%x mask 0x%x\n", misseddata_flag, pcard->chnl_mask);
+        epicsInterruptContextMessage(buf);
     }
 
     ipmIrqCmd(pcard->carrier, pcard->slot, 0, ipac_irqClear);
     ipmIrqCmd(pcard->carrier, pcard->slot, 0, ipac_irqEnable);
+    pcard->pHardware->controlReg = ctlReg;
+    pcard->pHardware->startConvert = 1;
 }
 
 /***********************************************************************/
@@ -684,16 +701,19 @@ void ip330StartConvertByName(char * cardname)
 /**************************************************************************************************/
 /* Here we supply the driver report function for epics                                            */
 /**************************************************************************************************/
-static  long    IP330_EPICS_Report(int level);
+static  long    ip330Report(int level);
 
-const struct drvet drvIP330 = {2,                              /*2 Table Entries */
-                              (DRVSUPFUN) IP330_EPICS_Report,  /* Driver Report Routine */
-                              NULL}; /* Driver Initialization Routine */
+const struct drvet drvIP330 = 
+{
+	2,				/* 2 Table Entries */
+	(DRVSUPFUN) ip330Report,	/* Driver Report Routine */
+	NULL				/* Driver Initialization Routine */
+};
 
 epicsExportAddress(drvet,drvIP330);
 
 /* implementation */
-static long IP330_EPICS_Report(int level)
+static long ip330Report(int level)
 {
     IP330_ID pcard;
 
@@ -713,8 +733,12 @@ static long IP330_EPICS_Report(int level)
 
             if(level > 2)
             {
-                printf("\tInput range is %s, chnl%d~chnl%d is in use, scan mode is %s\n", rangeName[pcard->inp_typ*N_RANGES+pcard->inp_range], pcard->start_channel, pcard->end_channel, scanModeName[pcard->scan_mode]);
-                printf("\tTrigger direction is %s, average %d times %s reset, timer is %gus\n", trgDirName[pcard->trg_dir], pcard->avg_times, pcard->avg_rst?"with":"without", pcard->timer_prescaler*pcard->conversion_timer/8.0);
+                printf("\tInput range is %s, chnl%d~chnl%d is in use, scan mode is %s\n", 
+                         rangeName[pcard->inp_typ*N_RANGES+pcard->inp_range], pcard->start_channel, 
+                         pcard->end_channel, scanModeName[pcard->scan_mode]);
+                printf("\tTrigger direction is %s, average %d times %s reset, timer is %gus\n", 
+                         trgDirName[pcard->trg_dir], pcard->avg_times, pcard->avg_rst?"with":"without", 
+                         pcard->timer_prescaler*pcard->conversion_timer/8.0);
                 printf("\tIO space is at %p\nn", pcard->pHardware);
             }
         }
@@ -722,4 +746,64 @@ static long IP330_EPICS_Report(int level)
 
     return 0;
 }
+
+#ifndef	NO_EPICS
+/* ip330Report(int interest) */
+static const iocshArg ip330ReportArg0 = {"interest", iocshArgInt};
+static const iocshArg * const ip330ReportArgs[1] = {&ip330ReportArg0};
+static const iocshFuncDef ip330ReportFuncDef = {"ip330Report",1,ip330ReportArgs};
+static void ip330ReportCallFunc(const iocshArgBuf *args)
+{
+    ip330Report(args[0].ival);
+}
+
+/* ip330StartConvByName( char *pName); */
+
+static const iocshArg ip330StartConvertByNameArg0 = {"pName",iocshArgPersistentString};
+static const iocshArg * const ip330StartConvertByNameArgs[1] = {
+    &ip330StartConvertByNameArg0 };
+
+static const iocshFuncDef ip330StartConvertByNameFuncDef =
+    {"ip330StartConvertByName",1,ip330StartConvertByNameArgs};
+
+static void ip330StartConvertByNameCallFunc(const iocshArgBuf *arg)
+{
+    ip330StartConvertByName(arg[0].sval);
+}
+
+/* ip330Create( char *pName, unsigned short card, unsigned short slot, char *modeNamer); */
+
+static const iocshArg ip330CreateArg0 = {"pName",iocshArgPersistentString};
+static const iocshArg ip330CreateArg1 = {"card", iocshArgInt};
+static const iocshArg ip330CreateArg2 = {"slot", iocshArgInt};
+static const iocshArg ip330CreateArg3 = {"a2drange",iocshArgString};
+static const iocshArg ip330CreateArg4 = {"channels",iocshArgString};
+static const iocshArg ip330CreateArg5 = {"gainL",iocshArgInt};
+static const iocshArg ip330CreateArg6 = {"gainH",iocshArgInt};
+static const iocshArg ip330CreateArg7 = {"scanmode",iocshArgString};
+static const iocshArg ip330CreateArg8 = {"timer",iocshArgString};
+static const iocshArg ip330CreateArg9 = {"intvec",iocshArgInt};
+
+static const iocshArg * const ip330CreateArgs[10] = {
+    &ip330CreateArg0, &ip330CreateArg1, &ip330CreateArg2, &ip330CreateArg3, &ip330CreateArg4,
+    &ip330CreateArg5, &ip330CreateArg6, &ip330CreateArg7, &ip330CreateArg8, &ip330CreateArg9};
+
+static const iocshFuncDef ip330CreateFuncDef =
+    {"ip330Create",10,ip330CreateArgs};
+
+static void ip330CreateCallFunc(const iocshArgBuf *arg)
+{
+    ip330Create(arg[0].sval, arg[1].ival, arg[2].ival, arg[3].sval, arg[4].sval,
+                arg[5].ival, arg[6].ival, arg[7].sval, arg[8].sval, arg[9].ival);
+}
+
+// LOCAL void drvIP330Registrar(void) {
+void drvIP330Registrar(void) {
+    iocshRegister(&ip330ReportFuncDef,ip330ReportCallFunc); 
+    iocshRegister(&ip330StartConvertByNameFuncDef,ip330StartConvertByNameCallFunc);
+    iocshRegister(&ip330CreateFuncDef,ip330CreateCallFunc);
+}
+epicsExportRegistrar(drvIP330Registrar);
+
+#endif /* NO_EPICS */
 
