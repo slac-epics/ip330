@@ -1,5 +1,4 @@
 /****************************************************************/
-/* $Id: drvIP330.c,v 1.4 2010/03/12 01:14:03 pengs Exp $        */
 /* This file implements driver support for IP330 ADC            */
 /* Author: Sheng Peng, pengs@slac.stanford.edu, 650-926-3847    */
 /****************************************************************/
@@ -11,7 +10,18 @@
 #include "drvIP330Private.h"
 #include "devLib.h"
 #include "errlog.h"
+#include "epicsThread.h"
 #include "iocsh.h"
+#include "ContextTimer.h"
+
+// To check ISR timing, define ENABLE_CONTEXT_TIMER_DIAGS
+// and in your IOC, use the diagTimer module including
+// <APP>_DBD += diagTimer.dbd
+// <APP>_LIB += diagTimer
+// Show results via ShowAllContextTimers()
+#undef	ENABLE_CONTEXT_TIMER_DIAGS
+
+extern "C" {
 
 int     IP330_DRV_DEBUG = 0;
 
@@ -28,7 +38,9 @@ IP330_ID ip330GetByName(char * cardname)
     if(!card_list_inited)  
 		return NULL;
 
-    for(pcard=(IP330_ID)ellFirst((ELLLIST *)&ip330_card_list); pcard; pcard = (IP330_ID)ellNext((ELLNODE *)pcard))
+	for (	pcard = (IP330_ID)ellFirst((ELLLIST *)&ip330_card_list);
+			pcard != NULL;
+			pcard = (IP330_ID)ellNext((ELLNODE *)pcard) )
     {
         if ( 0 == strcmp(cardname, pcard->cardname) )
 			break;
@@ -47,7 +59,9 @@ IP330_ID ip330GetByLocation(UINT16 carrier, UINT16 slot)
     if(!card_list_inited)  
 		return NULL;
 
-    for(pcard=(IP330_ID)ellFirst((ELLLIST *)&ip330_card_list); pcard; pcard = (IP330_ID)ellNext((ELLNODE *)pcard))
+	for (	pcard = (IP330_ID)ellFirst((ELLLIST *)&ip330_card_list);
+			pcard != NULL;
+			pcard = (IP330_ID)ellNext((ELLNODE *)pcard) )
     {
         if ( (carrier == pcard->carrier) && (slot == pcard->slot) )  
 			break;
@@ -83,7 +97,7 @@ IP330_ID ip330GetByLocation(UINT16 carrier, UINT16 slot)
 /*            ip330Create("ip330_1", 0, 0, "0to5D", "ch1-ch10", 0x0, 0x0, "burstCont-Input-Avg10R", "64*2@8MHz", 0x66)                                        */
 /**************************************************************************************************************************************************************/
 
-static void ip330ISR(int arg);
+static void ip330ISR(void * arg);
 
 int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, char * channels, UINT32 gainL, UINT32 gainH, char *scanmode, char * timer, UINT8 vector)
 {
@@ -94,7 +108,7 @@ int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, ch
     int timer_prescaler, conversion_timer;
 
     /* calloc will put everything zero */
-    IP330_ID pcard = callocMustSucceed(1, sizeof(struct IP330_CARD), "ip330Create");
+    IP330_ID	pcard	= reinterpret_cast<IP330_ID>( callocMustSucceed(1, sizeof(struct IP330_CARD), "ip330Create") );
 
     if(!card_list_inited)
     {/* Initialize the IP330 link list */
@@ -154,13 +168,17 @@ int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, ch
     /* Check ADC range and Input type (Differential of Single End) */
     for(loop=0; loop<N_RANGES*N_INPTYPS; loop++)
     {
-        if(!strcmp(adcrange, rangeName[loop])) break;
+        if(!strcmp(adcrange, rangeName[loop]))
+			break;
     }
     if(loop < N_RANGES*N_INPTYPS)
     {
         pcard->inp_range = loop%N_RANGES;
         pcard->inp_typ = loop/N_RANGES;
-        pcard->num_chnl = MAX_IP330_CHANNELS/(2 - pcard->inp_typ);
+		pcard->num_chnl =	(	pcard->inp_typ == INP_TYP_DIFF
+							?	MAX_IP330_CHANNELS / 2
+							:	MAX_IP330_CHANNELS              );
+
     }
     else
     {
@@ -176,8 +194,9 @@ int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, ch
         status = -1;
         goto FAIL;
     }
-    if( (start_channel < 0) || (start_channel >= pcard->num_chnl) ||
-        (end_channel < 0) || (end_channel >= pcard->num_chnl) || (start_channel > end_channel) )
+    if( (start_channel < 0) || (start_channel >= (int) pcard->num_chnl) ||
+        (end_channel   < 0) || (end_channel   >= (int) pcard->num_chnl) ||
+		(start_channel > end_channel) )
     {
         errlogPrintf ("ip330Create: channel range %s is illegal for device %s\n", channels, cardname);
         status = -1;
@@ -284,7 +303,7 @@ int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, ch
     pcard->pHardware   = (IP330_HW_MAP *) ipmBaseAddr(carrier, slot, ipac_addrIO);
 
     /* Install ISR */
-    if(ipmIntConnect(carrier, slot, vector, ip330ISR, (int)pcard))
+    if ( ipmIntConnect( carrier, slot, vector, ip330ISR, pcard ) )
     {
         errlogPrintf ("ip330Create: intConnect failed for device %s\n", cardname);
         status = -1;
@@ -313,8 +332,8 @@ FAIL:
 /* Since there is only one ADC and one Programmable Gain, we don't have to calibrate each channel.               */
 /* We just calibrate ADC with different gain under certain input range.                                          */
 /* Since calibration will interrupt normal scanning, so usually calibration should only happen in initialization.*/
-/* Since calibration will change to setting, so make sure to run ip330Configure after calibration.               */
-/* This function cab be only called from task level.                                                             */
+/* Since calibration will clear the control register setting, make sure to run ip330Configure after calibration. */
+/* This function can be only called from task level.                                                             */
 /*****************************************************************************************************************/
 void ip330Calibrate(IP330_ID pcard)
 {
@@ -447,7 +466,11 @@ void ip330Configure(IP330_ID pcard)
         pcard->sum_data[loop] = 0xFFFFFFFF;	/* Mark data is not available */
     }
 
-    tmp_ctrl = CTRL_REG_STRGHT_BINARY | (pcard->trg_dir<<CTRL_REG_TRGDIR_SHFT) | (pcard->inp_typ<<CTRL_REG_INPTYP_SHFT) | (pcard->scan_mode<<CTRL_REG_SCANMODE_SHFT) | CTRL_REG_INTR_CTRL;
+    tmp_ctrl	=	CTRL_REG_STRGHT_BINARY
+				|	( pcard->trg_dir	<< CTRL_REG_TRGDIR_SHFT   )
+				|	( pcard->inp_typ	<< CTRL_REG_INPTYP_SHFT   )
+				|	( pcard->scan_mode	<< CTRL_REG_SCANMODE_SHFT )
+				|	CTRL_REG_INTR_CTRL;
 
     if(pcard->scan_mode != SCAN_MODE_CVTONEXT && pcard->scan_mode != SCAN_MODE_BURSTSINGLE)
         tmp_ctrl |= CTRL_REG_TIMR_ENBL;
@@ -475,7 +498,8 @@ void ip330Configure(IP330_ID pcard)
     epicsThreadSleep(0.01);
 
     /* Make sure startConvert is set when Convert on Ext Trigger Only mode */
-    if(pcard->scan_mode == SCAN_MODE_CVTONEXT) pcard->pHardware->startConvert = 0x1;
+    if( pcard->scan_mode == SCAN_MODE_CVTONEXT )
+		pcard->pHardware->startConvert = 0x1;
 
     return;
 }
@@ -485,12 +509,6 @@ void ip330Configure(IP330_ID pcard)
 /****************************************************************/
 int ip330Read(IP330_ID pcard, UINT16 channel, signed int * pvalue)
 {
-    /* The raw value we read from hardware is UINT16 */
-    /* But after calibration, it might be a little bit wider range */
-
-    UINT32 tmp;
-    double tmp_sum, tmp_avgtimes;
-
     if(!pcard)
     {
         errlogPrintf("ip330Read called with NULL pointer!\n");
@@ -506,7 +524,9 @@ int ip330Read(IP330_ID pcard, UINT16 channel, signed int * pvalue)
         return -1;
     }
 
-    tmp = pcard->sum_data[channel];
+    /* The raw value we read from hardware is UINT16 */
+    /* But after calibration, it might be a little bit wider range */
+    UINT32	tmp = pcard->sum_data[channel];
 
     if(tmp == 0xFFFFFFFF)
     {
@@ -515,10 +535,11 @@ int ip330Read(IP330_ID pcard, UINT16 channel, signed int * pvalue)
         return -1;
     }
 
-    tmp_sum = tmp & 0x00FFFFFF;
-    tmp_avgtimes = ( (tmp & 0xFF000000) >> 24 ) + 1;
-
-    *pvalue = pcard->adj_slope[pcard->gain[channel]] * (tmp_sum/tmp_avgtimes + pcard->adj_offset[pcard->gain[channel]]);
+    double	tmp_sum		 = tmp & 0x00FFFFFF;
+	double	tmp_avgtimes = ( (tmp & 0xFF000000) >> 24 ) + 1;
+	double	value		 =	pcard->adj_slope[pcard->gain[channel]]
+						*	( tmp_sum/tmp_avgtimes + pcard->adj_offset[pcard->gain[channel]] );
+    *pvalue = static_cast<int>( value );
 
     epicsMutexUnlock(pcard->lock);
 
@@ -543,23 +564,28 @@ IOSCANPVT * ip330GetIoScanPVT(IP330_ID pcard)
 /* Read data from mailbox,  check dual level buffer if needed          */
 /* Put data into sum_data, stop scan and trigger record scan if needed */
 /***********************************************************************/
-void ip330ISR(int arg)
+#ifdef	ENABLE_CONTEXT_TIMER_DIAGS
+static ContextTimerMax ip330ISRContextTimer( "ip330ISR" );
+static ContextTimerMax ip330ISRLoopContextTimer( "ip330ISRLoop" );
+static ContextTimerMax ip330ISRUniformContContextTimer( "ip330ISRUniformCont" );
+#endif	//	ENABLE_CONTEXT_TIMER_DIAGS
+void ip330ISR(void * arg)
 {
+#ifdef	ENABLE_CONTEXT_TIMER_DIAGS
+	ContextTimer	contextTimer( ip330ISRContextTimer );
+#endif	//	ENABLE_CONTEXT_TIMER_DIAGS
     int loop;
     UINT32 newdata_flag, misseddata_flag;
     UINT16 data[MAX_IP330_CHANNELS];
     UINT32 buf0_avail=0, buf1_avail=0;
-    UINT16 ctlReg;
     char buf[32];
 
-    IP330_ID					pcard = (IP330_ID)arg;
+    IP330_ID					pcard	= (IP330_ID)arg;
     volatile IP330_HW_MAP	*	pHardware = pcard->pHardware;	/* controller registers */
 
     /* disable ints on this module first */
-    ctlReg = pHardware->controlReg;
-    pHardware->controlReg = 0;
-
     ipmIrqCmd(pcard->carrier, pcard->slot, 0, ipac_irqDisable);
+
     if ( IP330_DRV_DEBUG > 10 )
 		epicsInterruptContextMessage("IP330 ISR called\n");
 
@@ -584,7 +610,6 @@ void ip330ISR(int arg)
             }
             buf0_avail = 1;
         }
-#if	1
         if(newdata_flag1 == pcard->chnl_mask)
         {/* Read Data from buf1 */
             for(loop = pcard->start_channel; loop <= pcard->end_channel; loop++)
@@ -593,7 +618,6 @@ void ip330ISR(int arg)
             }
             buf1_avail = 1;
         }
-#endif
     }
     else
     {	/* Input type is single-end, there is only buf0 */
@@ -646,21 +670,25 @@ void ip330ISR(int arg)
             if ( tmp_avgtimes >= pcard->avg_times && loop == pcard->end_channel )
             {
                 if (	( pcard->avg_rst != 0 )
-					&&	(	( pcard->scan_mode == SCAN_MODE_UNIFORMCONT	)
-						||	( pcard->scan_mode == SCAN_MODE_BURSTCONT	) ) )
+					&&	( pcard->scan_mode == SCAN_MODE_UNIFORMCONT	) )
                 {
-                    UINT16 saved_ctrl;
-                    saved_ctrl = pHardware->controlReg;
-                    pHardware->controlReg = (saved_ctrl) & 0xF8FF; /* Disable scan */
-					/* How long are we stuck in this loop? */
+#ifdef	ENABLE_CONTEXT_TIMER_DIAGS
+					ContextTimer	contextTimer( ip330ISRUniformContContextTimer );
+#endif	//	ENABLE_CONTEXT_TIMER_DIAGS
+					/* Save the current control register settings */
+					UINT16		saved_ctrl = pHardware->controlReg;
+					pHardware->controlReg = (saved_ctrl) & 0xF8FF; /* Disable scan */
                     while( pHardware->controlReg & 0x0700 )
-						;
+					{	/* How long are we stuck in this loop? */
+#ifdef	ENABLE_CONTEXT_TIMER_DIAGS
+						ContextTimer	contextTimer( ip330ISRLoopContextTimer );
+#endif	//	ENABLE_CONTEXT_TIMER_DIAGS
+					}
 
                     /* Work around hardware bug of uniform continuous mode */
-                    if ( pcard->scan_mode == SCAN_MODE_UNIFORMCONT )
-						pHardware->startChannel = pcard->start_channel;
-
-                    pHardware->controlReg = saved_ctrl;
+					pHardware->startChannel = pcard->start_channel;
+					pHardware->controlReg	= saved_ctrl;
+					pHardware->startConvert	= 1;
                 }
                 scanIoRequest(pcard->ioscan);
             }
@@ -685,8 +713,13 @@ void ip330ISR(int arg)
 
     ipmIrqCmd(pcard->carrier, pcard->slot, 0, ipac_irqClear);
     ipmIrqCmd(pcard->carrier, pcard->slot, 0, ipac_irqEnable);
-    pHardware->controlReg = ctlReg;
-    pHardware->startConvert = 1;
+
+	// Note: It's not good to clear scan mode or set startCovert in the ISR
+	// Clearing the scan mode kills the ongoing scan forcing you
+	// to set startConvert again, however, that causes an immediate scan
+	// without waiting for a timeout resulting in roughly 15KHz interrupt rate.
+    //	pHardware->controlReg = saved_ctrl;
+	//  pHardware->startConvert = 1;
 }
 
 /***********************************************************************/
@@ -709,16 +742,6 @@ void ip330StartConvertByName(char * cardname)
 /**************************************************************************************************/
 /* Here we supply the driver report function for epics                                            */
 /**************************************************************************************************/
-static  long    ip330Report(int level);
-
-const struct drvet drvIP330 = 
-{
-	2,				/* 2 Table Entries */
-	(DRVSUPFUN) ip330Report,	/* Driver Report Routine */
-	NULL				/* Driver Initialization Routine */
-};
-
-epicsExportAddress(drvet,drvIP330);
 
 /* implementation */
 static long ip330Report(int level)
@@ -735,7 +758,9 @@ static long ip330Report(int level)
 
     if(level > 1)   /* we only get into link list for detail when user wants */
     {
-        for(pcard=(IP330_ID)ellFirst((ELLLIST *)&ip330_card_list); pcard; pcard = (IP330_ID)ellNext((ELLNODE *)pcard))
+        for (	pcard = (IP330_ID)ellFirst((ELLLIST *)&ip330_card_list);
+				pcard != NULL;
+				pcard = (IP330_ID)ellNext((ELLNODE *)pcard) )
         {
             printf("\tIP330 card %s is installed on carrier %d slot %d\n", pcard->cardname, pcard->carrier, pcard->slot);
 
@@ -747,13 +772,23 @@ static long ip330Report(int level)
                 printf("\tTrigger direction is %s, average %d times %s reset, timer is %gus\n", 
                          trgDirName[pcard->trg_dir], pcard->avg_times, pcard->avg_rst?"with":"without", 
                          pcard->timer_prescaler*pcard->conversion_timer/8.0);
-                printf("\tIO space is at %p\nn", pcard->pHardware);
+                printf("\tIO space is at %p\n", pcard->pHardware);
+    			printf("\tControl Reg is 0x%X\n", pcard->pHardware->controlReg );
             }
         }
     }
 
     return 0;
 }
+
+const struct drvet drvIP330 = 
+{
+	2,				/* 2 Table Entries */
+	(DRVSUPFUN) ip330Report,	/* Driver Report Routine */
+	NULL				/* Driver Initialization Routine */
+};
+
+epicsExportAddress(drvet,drvIP330);
 
 #ifndef	NO_EPICS
 /* ip330Report(int interest) */
@@ -815,3 +850,4 @@ epicsExportRegistrar(drvIP330Registrar);
 
 #endif /* NO_EPICS */
 
+} // extern "C"

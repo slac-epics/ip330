@@ -22,7 +22,7 @@ DBD += IP330.dbd
 # IP330_SRCS_vxWorks += -nil-
 
 # Add locally compiled object code
-IP330_SRCS += drvIP330.c
+IP330_SRCS += drvIP330.cpp
 IP330_SRCS += devAiIP330.c
 
 

@@ -1,10 +1,6 @@
 #ifndef _INCLUDE_DRV_IP330_PRIVATE_H_
 #define _INCLUDE_DRV_IP330_PRIVATE_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif  /* __cplusplus */
-
 /******************************************************************/
 /* $Id: drvIP330Private.h,v 1.1.1.1 2006/08/10 16:18:05 luchini Exp $   */
 /* This file defines the internal hw/sw struct of IP330 ADC module*/
@@ -41,6 +37,10 @@ extern "C" {
 #define IP330_DRV_VERSION "IP330 driver V1.0"
 
 #define DEBUG_MSG_SIZE 256
+
+#ifdef __cplusplus
+extern "C" {
+#endif  /* __cplusplus */
 
 /* Hardware registers for ADC channels */
 typedef struct IP330_HW_MAP

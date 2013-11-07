@@ -12,7 +12,7 @@ include $(TOP)/configure/CONFIG
 # databases, templates, substitutions like this
 DB += IP330.template
 DB += IP330BSA.template
-DB += IP330.db
+DB += IP330.substitutions
 DB += IP330BSA_TSE.template
 
 #----------------------------------------------------
