@@ -80,7 +80,7 @@ addCarrier( "0x0000" )
 #									requirements, a scanmode of "burstCont-Output-Avg1" is typical.
 #		char	*	timer,		Format is "x*y@8MHz" where x must be [64,255], y must be [1,65535]
 #								The timing interval can be calculated from (x*y)/8 in microseconds.
-#		UINT8		vector )	Interrupt vector should be 0x66
+#		UINT8		vector )	Interrupt vector must be unique.  Suggest starting from 0x66
 ip330Create( "ai0", 0, 2, "-10to10D", "ch0-ch8", 0, 0, "burstCont-Output-Avg1", "80*3@8MHz", 0x66 )
 ip330StartConvertByName( "ai0" )
 
