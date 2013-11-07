@@ -84,6 +84,7 @@ IP330_ID ip330GetByLocation(UINT16 carrier, UINT16 slot)
 /**************************************************************************************************************************************************************/
 
 static void ip330ISR(int arg);
+
 int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, char * channels, UINT32 gainL, UINT32 gainH, char *scanmode, char * timer, UINT8 vector)
 {
     int status, loop;
@@ -256,7 +257,7 @@ int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, ch
     else
         pcard->avg_rst = 0;
 
-    /* Ckeck timer */
+    /* Check timer */
     if( 2 != sscanf(timer, timerFormat, &timer_prescaler, &conversion_timer) )
     {
         errlogPrintf ("ip330Create: timer %s is illegal for device %s\n", timer, cardname);
@@ -309,7 +310,7 @@ FAIL:
 }
 
 /*****************************************************************************************************************/
-/* Since there is only one ADC and one Programmalbe Gain, we don't have to calibrate each channel.               */
+/* Since there is only one ADC and one Programmable Gain, we don't have to calibrate each channel.               */
 /* We just calibrate ADC with different gain under certain input range.                                          */
 /* Since calibration will interrupt normal scanning, so usually calibration should only happen in initialization.*/
 /* Since calibration will change to setting, so make sure to run ip330Configure after calibration.               */
@@ -551,33 +552,35 @@ void ip330ISR(int arg)
     UINT16 ctlReg;
     char buf[32];
 
-    IP330_ID pcard = (IP330_ID)arg;
+    IP330_ID					pcard = (IP330_ID)arg;
+    volatile IP330_HW_MAP	*	pHardware = pcard->pHardware;	/* controller registers */
 
     /* disable ints on this module first */
-    ctlReg = pcard->pHardware->controlReg;
-    pcard->pHardware->controlReg = 0;
+    ctlReg = pHardware->controlReg;
+    pHardware->controlReg = 0;
 
     ipmIrqCmd(pcard->carrier, pcard->slot, 0, ipac_irqDisable);
-    if(IP330_DRV_DEBUG) epicsInterruptContextMessage("IP330 ISR called\n");
+    if ( IP330_DRV_DEBUG > 10 )
+		epicsInterruptContextMessage("IP330 ISR called\n");
 
     if(pcard->inp_typ == INP_TYP_DIFF)
-    {/* Input type is differential, we have buf0 and buf1 */
+    {	/* Input type is differential, we have buf0 and buf1 */
         UINT16 newdata_flag0, newdata_flag1;
         UINT16 misseddata_flag0, misseddata_flag1;
 
-        newdata_flag0 = (pcard->pHardware->newData[0]) & pcard->chnl_mask;
-        newdata_flag1 = (pcard->pHardware->newData[1]) & pcard->chnl_mask;
+        newdata_flag0 = (pHardware->newData[0]) & pcard->chnl_mask;
+        newdata_flag1 = (pHardware->newData[1]) & pcard->chnl_mask;
         newdata_flag = ((newdata_flag1 << 16) | newdata_flag0);
 
-        misseddata_flag0 = (pcard->pHardware->missedData[0]) & pcard->chnl_mask;
-        misseddata_flag1 = (pcard->pHardware->missedData[1]) & pcard->chnl_mask;
+        misseddata_flag0 = (pHardware->missedData[0]) & pcard->chnl_mask;
+        misseddata_flag1 = (pHardware->missedData[1]) & pcard->chnl_mask;
         misseddata_flag = ((misseddata_flag1 << 16) | misseddata_flag0);
 
         if(newdata_flag0 == pcard->chnl_mask)
         {/* Read Data from buf0 */
             for(loop = pcard->start_channel; loop <= pcard->end_channel; loop++)
             {
-                data[loop] = pcard->pHardware->data[loop];
+                data[loop] = pHardware->data[loop];
             }
             buf0_avail = 1;
         }
@@ -586,25 +589,25 @@ void ip330ISR(int arg)
         {/* Read Data from buf1 */
             for(loop = pcard->start_channel; loop <= pcard->end_channel; loop++)
             {
-                data[loop+16] = pcard->pHardware->data[loop+16];
+                data[loop+16] = pHardware->data[loop+16];
             }
             buf1_avail = 1;
         }
 #endif
     }
     else
-    {/* Input type is single-end, there is only buf0 */
-        newdata_flag = ((pcard->pHardware->newData[1]  << 16) | pcard->pHardware->newData[0]);
+    {	/* Input type is single-end, there is only buf0 */
+        newdata_flag = ((pHardware->newData[1]  << 16) | pHardware->newData[0]);
         newdata_flag &= pcard->chnl_mask;
 
-        misseddata_flag = ((pcard->pHardware->missedData[1]  << 16) | pcard->pHardware->missedData[0]);
+        misseddata_flag = ((pHardware->missedData[1]  << 16) | pHardware->missedData[0]);
         misseddata_flag &= pcard->chnl_mask;
 
         if(newdata_flag == pcard->chnl_mask)
         {/* Read Data */
             for(loop = pcard->start_channel; loop <= pcard->end_channel; loop++)
             {
-                data[loop] = pcard->pHardware->data[loop];
+                data[loop] = pHardware->data[loop];
             }
             buf0_avail = 1;
         }
@@ -640,19 +643,24 @@ void ip330ISR(int arg)
             }
             pcard->sum_data[loop] = ( (tmp_sum & 0x00FFFFFF) | ((tmp_avgtimes - 1) << 24) );
 
-            if(tmp_avgtimes >= pcard->avg_times && loop == pcard->end_channel)
+            if ( tmp_avgtimes >= pcard->avg_times && loop == pcard->end_channel )
             {
-                if( (pcard->avg_rst) && ((pcard->scan_mode == SCAN_MODE_UNIFORMCONT) || (pcard->scan_mode == SCAN_MODE_BURSTCONT)) )
+                if (	( pcard->avg_rst != 0 )
+					&&	(	( pcard->scan_mode == SCAN_MODE_UNIFORMCONT	)
+						||	( pcard->scan_mode == SCAN_MODE_BURSTCONT	) ) )
                 {
                     UINT16 saved_ctrl;
-                    saved_ctrl = pcard->pHardware->controlReg;
-                    pcard->pHardware->controlReg = (saved_ctrl) & 0xF8FF; /* Disable scan */
-                    while( pcard->pHardware->controlReg & 0x0700 );
+                    saved_ctrl = pHardware->controlReg;
+                    pHardware->controlReg = (saved_ctrl) & 0xF8FF; /* Disable scan */
+					/* How long are we stuck in this loop? */
+                    while( pHardware->controlReg & 0x0700 )
+						;
 
                     /* Work around hardware bug of uniform continuous mode */
-                    if(pcard->scan_mode == SCAN_MODE_UNIFORMCONT) pcard->pHardware->startChannel = pcard->start_channel;
+                    if ( pcard->scan_mode == SCAN_MODE_UNIFORMCONT )
+						pHardware->startChannel = pcard->start_channel;
 
-                    pcard->pHardware->controlReg = saved_ctrl;
+                    pHardware->controlReg = saved_ctrl;
                 }
                 scanIoRequest(pcard->ioscan);
             }
@@ -677,8 +685,8 @@ void ip330ISR(int arg)
 
     ipmIrqCmd(pcard->carrier, pcard->slot, 0, ipac_irqClear);
     ipmIrqCmd(pcard->carrier, pcard->slot, 0, ipac_irqEnable);
-    pcard->pHardware->controlReg = ctlReg;
-    pcard->pHardware->startConvert = 1;
+    pHardware->controlReg = ctlReg;
+    pHardware->startConvert = 1;
 }
 
 /***********************************************************************/
