@@ -283,9 +283,6 @@ int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, ch
     /* Hardware pointer */
     pcard->pHardware   = (IP330_HW_MAP *) ipmBaseAddr(carrier, slot, ipac_addrIO);
 
-    /* We successfully allocate all resource */
-    ellAdd( (ELLLIST *)&ip330_card_list, (ELLNODE *)pcard);
-
     /* Install ISR */
     if(ipmIntConnect(carrier, slot, vector, ip330ISR, (int)pcard))
     {
@@ -293,6 +290,9 @@ int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, ch
         status = -1;
         goto FAIL;
     }
+
+    /* We successfully allocate all resource */
+    ellAdd( (ELLLIST *)&ip330_card_list, (ELLNODE *)pcard);
 
     pcard->pHardware->controlReg = 0x0;
     ipmIrqCmd(carrier, slot, 0, ipac_irqEnable);
