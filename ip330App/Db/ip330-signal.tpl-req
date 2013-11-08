@@ -1,5 +1,4 @@
 # Autosave IP330 Analog Input Signal PV list
-$(SIG)
 $(SIG).ADEL
 $(SIG).DESC
 $(SIG).EGUF
