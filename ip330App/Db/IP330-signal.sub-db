@@ -1,7 +1,0 @@
-# Generate a db file for a single IP330 signal
-file IP330.template
-{
-	pattern
-	{ EGUF,  EGUL,   ADEL,  MDEL, HIHI,  HIGH,  LOW ,  LOLO,  EGU   }
-	{ 10.0 , -10.0 , 0.0 ,  0.0 , 9.5 ,  8.0 , -8.0 , -9.5 ,  V		}
-}
