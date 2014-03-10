@@ -9,8 +9,6 @@
 #  Rev:  dd-mmm-yyyy, Reviewer's Name    (USERNAME)
 #--------------------------------------------------------------
 #  Mod:
-#        10-Mar-2014, S. Condamoor         (SCONDAM);
-#          release ip330-R2-2-5
 #        20-Mar-2010, S. Hoobler         (SONYA);
 #          release ip330-R2-2-0
 #        29-Apr-2009, K. Luchini         (LUCHINI);
@@ -25,7 +23,6 @@
 #
 #==============================================================
 #    
-ip330-R2-2-5: Add autosaveFields to ip330App/Db/IP330BSA.template
             
 ip330-R2-2-4: Build against ipac-R2-11_1-0 which builds for all targets
 
