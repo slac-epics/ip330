@@ -22,6 +22,7 @@ record(ai, "$(RECNAME)") {
   field(LSV,  "MINOR")
   field(LLSV, "MAJOR")
   field(FLNK, "$(FLNK)")
+  info(autosaveFields, "HIHI HIGH LOW LOLO") 
 }
 
 
