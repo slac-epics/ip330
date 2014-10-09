@@ -2,3 +2,4 @@
 device(ai, INST_IO, devAiIP330, "ACROMAG-IP330")
 driver(drvIP330)
 registrar(drvIP330Registrar)
+variable( IP330_DRV_DEBUG, int )

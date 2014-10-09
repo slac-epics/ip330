@@ -1,0 +1,22 @@
+# This record calculates the expected delay, in fiducials, between the trigger and the
+# reception of the analog input data.  This triggers on a negative edge, so if the trigger
+# is normal (0), we have to add in the width as well.
+record(calc, "$(PV,undefined):$(CARD,undefined):TRIGGER_DELAY")
+{
+  field(DESC, "IP330 Trigger Delay")
+  field(INPA, "$(EVR,undefined):CTRL.DG$(TRIGGER,undefined)C CPP")
+  field(INPB, "$(EVR,undefined):CTRL.DG$(TRIGGER,undefined)D CPP")
+  field(INPC, "$(EVR,undefined):CTRL.DG$(TRIGGER,undefined)W CPP")
+  field(INPD, "$(EVR,undefined):CTRL.DG$(TRIGGER,undefined)P CPP")
+  field(INPE, "-1")                        # This is a fudge factor, pure and simple.
+  field(CALC, "(8.4e-9*A*(B+(D?0:C)))*360+E")
+  field(PINI, "NO")
+}
+
+record( bi, "$(PV,undefined):$(CARD,undefined):SYNC" )
+{
+  field( DESC, "Timestamp Synchronization" )
+  field( ZNAM, "Out of Sync" )
+  field( ONAM, "Synchronized" )
+  field( VAL, "0" )
+}
