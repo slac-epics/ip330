@@ -11,8 +11,10 @@ EPICS_BASE=$(EPICS_SITE_TOP)/base/$(BASE_MODULE_VERSION)
 # ===============================================================
 # Define the version(s) of any other needed modules 
 # ===============================================================
-IPAC_MODULE_VERSION=R3.0.0-1.1.0
-DIAG_TIMER_MODULE_VERSION=R1.4.0
+DIAG_TIMER_MODULE_VERSION       = R1.4.0
+IPAC_MODULE_VERSION             = R3.0.0-1.1.3
+EVENT_MODULE_VERSION            = R4.0.0-2.3.0
+TIMESYNC_MODULE_VERSION         = R1.1.5
 
 # ============================================================
 # External Support module path definitions
@@ -28,6 +30,7 @@ DIAG_TIMER_MODULE_VERSION=R1.4.0
 # If your build fails, look for these paths in your build output
 # ============================================================
 # Example: IPAC=$(EPICS_MODULES)/ipac/$(IPAC_MODULE_VERSION)
-IPAC=$(EPICS_MODULES)/ipac/$(IPAC_MODULE_VERSION)
-DIAG_TIMER=$(EPICS_MODULES)/diagTimer/$(DIAG_TIMER_MODULE_VERSION)
-
+DIAG_TIMER      = $(EPICS_MODULES)/diagTimer/$(DIAG_TIMER_MODULE_VERSION)
+IPAC            = $(EPICS_MODULES)/ipac/$(IPAC_MODULE_VERSION)
+EVENT           = $(EPICS_MODULES)/event/$(EVENT_MODULE_VERSION)
+TIMESYNC        = $(EPICS_MODULES)/timesync/$(TIMESYNC_MODULE_VERSION)

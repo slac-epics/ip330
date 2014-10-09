@@ -14,6 +14,7 @@ DB += IP330.template
 DB += IP330BSA.template
 DB += IP330.substitutions
 DB += IP330BSA_TSE.template
+DB += IP330delay.db
 
 #----------------------------------------------------
 REQ += ip330-signal.tpl-req

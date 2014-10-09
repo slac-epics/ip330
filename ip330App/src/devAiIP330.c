@@ -180,7 +180,7 @@ static long read_ai(struct aiRecord *pai)
     switch(pdevdata->funcflag)
     {
     case IP330_AI_DATA:
-        status = ip330Read(pdevdata->pcard, pdevdata->chnlnum, &tmp);
+        status = ip330Read(pdevdata->pcard, pdevdata->chnlnum, &tmp, &pai->time);
         break;
     }
 

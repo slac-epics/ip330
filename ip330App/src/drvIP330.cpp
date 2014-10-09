@@ -14,13 +14,6 @@
 #include "iocsh.h"
 #include "ContextTimer.h"
 
-// To check ISR timing, define ENABLE_CONTEXT_TIMER_DIAGS
-// and in your IOC, use the diagTimer module including
-// <APP>_DBD += diagTimer.dbd
-// <APP>_LIB += diagTimer
-// Show results via ShowAllContextTimers()
-#undef	ENABLE_CONTEXT_TIMER_DIAGS
-
 extern "C" {
 
 int     IP330_DRV_DEBUG = 0;
@@ -92,20 +85,39 @@ IP330_ID ip330GetByLocation(UINT16 carrier, UINT16 slot)
 /*                                        trgdir could be "Input", "Output" except for "cvtOnExt" which must come with "Input"                                */
 /*                                        AvgxN could be Avg10 means average 10 times, R means reset after average and only applicable to Continuous mode     */
 /*                  char *timer,          "x*y@8MHz", x must be [64,255], y must be [1,65535]                                                                 */
-/*                  UINT8  vector)                                                                                                                            */
+/*                  UINT8  vector, char *triggerPV, char *delayPV, char *syncPV)                                                                              */
 /*  Example:                                                                                                                                                  */
 /*            ip330Create("ip330_1", 0, 0, "0to5D", "ch1-ch10", 0x0, 0x0, "burstCont-Input-Avg10R", "64*2@8MHz", 0x66)                                        */
 /**************************************************************************************************************************************************************/
 
 static void ip330ISR(void * arg);
 
-int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, char * channels, UINT32 gainL, UINT32 gainH, char *scanmode, char * timer, UINT8 vector)
+int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, char * channels, UINT32 gainL, UINT32 gainH, char *scanmode, char * timer, UINT8 vector, char *trigger, char *delay, char *sync)
 {
+    DBADDR addr;
+    epicsUInt32 *trig, *gen;
+    static double zero = 0.0;
+    double *dval = &zero;
     int status, loop;
     int start_channel, end_channel;
     char tmp_smode[64], tmp_trgdir[64], tmp_avg[64];
     int avg_times;
     int timer_prescaler, conversion_timer;
+
+    if (trigger && !dbNameToAddr(trigger, &addr)) {
+        trig = (epicsUInt32 *) addr.pfield;
+        gen = trig + MAX_EV_TRIGGERS;
+    } else {
+        if (trigger) {
+            printf("\n\n\nNo PV trigger named %s!\n\n\n", trigger);
+            fflush(stdout);
+        }
+        trig = NULL;
+        gen = NULL;
+    }
+    if (delay && !dbNameToAddr(delay, &addr)) {
+        dval = (double *) addr.pfield;
+    }
 
     /* calloc will put everything zero */
     IP330_ID	pcard	= reinterpret_cast<IP330_ID>( callocMustSucceed(1, sizeof(struct IP330_CARD), "ip330Create") );
@@ -118,6 +130,15 @@ int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, ch
 
     pcard->lock = epicsMutexMustCreate();
 
+    pcard->trig = trig;
+    pcard->gen = gen;
+    pcard->delay = dval;
+    pcard->sync = sync ? strdup(sync) : strdup("");
+    pcard->wr = 0;
+    pcard->rd = 0;
+
+    pcard->data_avail = epicsEventMustCreate(epicsEventEmpty);
+
     for(loop = 0; loop < N_GAINS; loop++)
     {
         pcard->adj_slope[loop] = 1.0;
@@ -126,8 +147,10 @@ int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, ch
 
     for(loop = 0; loop < MAX_IP330_CHANNELS; loop++)
     {
-        pcard->sum_data[loop] = 0xFFFFFFFF;	/* Mark data is not available */
+        pcard->sum_data[0][loop] = 0xFFFFFFFF;	/* Mark data is not available */
+        pcard->sum_data[1][loop] = 0xFFFFFFFF;
     }
+    pcard->sum_wr = 0;
 
     scanIoInit( &(pcard->ioscan) );
 
@@ -318,6 +341,7 @@ int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, ch
 
     ip330Calibrate(pcard);
     ip330Configure(pcard);
+    ip330ThreadStart(pcard);
 
     return 0;
 
@@ -463,7 +487,8 @@ void ip330Configure(IP330_ID pcard)
     for (loop = 0; loop < MAX_IP330_CHANNELS; loop++)
     {
         dummy = pcard->pHardware->data[loop];
-        pcard->sum_data[loop] = 0xFFFFFFFF;	/* Mark data is not available */
+        pcard->sum_data[0][loop] = 0xFFFFFFFF;	/* Mark data is not available */
+        pcard->sum_data[1][loop] = 0xFFFFFFFF;
     }
 
     tmp_ctrl	=	CTRL_REG_STRGHT_BINARY
@@ -505,9 +530,9 @@ void ip330Configure(IP330_ID pcard)
 }
 
 /****************************************************************/
-/* Read data for paticular channel, do average and correction   */
+/* Read data for particular channel, do average and correction   */
 /****************************************************************/
-int ip330Read(IP330_ID pcard, UINT16 channel, signed int * pvalue)
+int ip330Read(IP330_ID pcard, UINT16 channel, signed int * pvalue, epicsTimeStamp *ts)
 {
     if(!pcard)
     {
@@ -526,11 +551,11 @@ int ip330Read(IP330_ID pcard, UINT16 channel, signed int * pvalue)
 
     /* The raw value we read from hardware is UINT16 */
     /* But after calibration, it might be a little bit wider range */
-    UINT32	tmp = pcard->sum_data[channel];
+    UINT32	tmp = pcard->sum_data[1 - pcard->sum_wr][channel];
 
     if(tmp == 0xFFFFFFFF)
     {
-        errlogPrintf("No data for channel number %d in ip330Read card %s\n", channel, pcard->cardname);
+        //MCB        errlogPrintf("No data for channel number %d in ip330Read card %s\n", channel, pcard->cardname);
         epicsMutexUnlock(pcard->lock);
         return -1;
     }
@@ -540,6 +565,7 @@ int ip330Read(IP330_ID pcard, UINT16 channel, signed int * pvalue)
 	double	value		 =	pcard->adj_slope[pcard->gain[channel]]
 						*	( tmp_sum/tmp_avgtimes + pcard->adj_offset[pcard->gain[channel]] );
     *pvalue = static_cast<int>( value );
+    *ts = pcard->sum_time;
 
     epicsMutexUnlock(pcard->lock);
 
@@ -566,21 +592,19 @@ IOSCANPVT * ip330GetIoScanPVT(IP330_ID pcard)
 /***********************************************************************/
 #ifdef	ENABLE_CONTEXT_TIMER_DIAGS
 static ContextTimerMax ip330ISRContextTimer( "ip330ISR" );
-static ContextTimerMax ip330ISRLoopContextTimer( "ip330ISRLoop" );
-static ContextTimerMax ip330ISRUniformContContextTimer( "ip330ISRUniformCont" );
 #endif	//	ENABLE_CONTEXT_TIMER_DIAGS
 void ip330ISR(void * arg)
 {
 #ifdef	ENABLE_CONTEXT_TIMER_DIAGS
-	ContextTimer	contextTimer( ip330ISRContextTimer );
+    ContextTimer	contextTimer( ip330ISRContextTimer );
 #endif	//	ENABLE_CONTEXT_TIMER_DIAGS
     int loop;
     UINT32 newdata_flag, misseddata_flag;
-    UINT16 data[MAX_IP330_CHANNELS];
     UINT32 buf0_avail=0, buf1_avail=0;
     char buf[32];
 
     IP330_ID					pcard	= (IP330_ID)arg;
+    UINT16 *data = pcard->data[pcard->wr & N_DATABUF_MASK];
     volatile IP330_HW_MAP	*	pHardware = pcard->pHardware;	/* controller registers */
 
     /* disable ints on this module first */
@@ -601,7 +625,7 @@ void ip330ISR(void * arg)
         misseddata_flag0 = (pHardware->missedData[0]) & pcard->chnl_mask;
         misseddata_flag1 = (pHardware->missedData[1]) & pcard->chnl_mask;
         misseddata_flag = ((misseddata_flag1 << 16) | misseddata_flag0);
-
+        
         if(newdata_flag0 == pcard->chnl_mask)
         {/* Read Data from buf0 */
             for(loop = pcard->start_channel; loop <= pcard->end_channel; loop++)
@@ -616,7 +640,7 @@ void ip330ISR(void * arg)
             {
                 data[loop+16] = pHardware->data[loop+16];
             }
-            buf1_avail = 1;
+            buf1_avail = 2;
         }
     }
     else
@@ -639,60 +663,9 @@ void ip330ISR(void * arg)
 
     if(buf0_avail || buf1_avail)
     {
-        /* Load sum_data, if reach avg_times and cont. mode needs reset, stop scan */
-        for(loop = pcard->start_channel; loop <= pcard->end_channel; loop++)
-        {
-            UINT32 tmp;
-            UINT32 tmp_avgtimes, tmp_sum;
-
-            tmp = pcard->sum_data[loop];
-            tmp_sum = (tmp & 0x00FFFFFF);
-            tmp_avgtimes = ((tmp & 0xFF000000) >> 24) + 1;
-
-            if( tmp == 0xFFFFFFFF || tmp_avgtimes >= pcard->avg_times)
-            {/* No data or already reached the average times */
-                tmp_sum = 0;
-                tmp_avgtimes = 0;
-            }
-
-            if(buf0_avail &&  (tmp_avgtimes+1) <= pcard->avg_times)
-            {
-                tmp_sum += data[loop];
-                tmp_avgtimes += 1;
-            }
-            if(buf1_avail &&  (tmp_avgtimes+1) <= pcard->avg_times)
-            {
-                tmp_sum += data[loop+16];
-                tmp_avgtimes += 1;
-            }
-            pcard->sum_data[loop] = ( (tmp_sum & 0x00FFFFFF) | ((tmp_avgtimes - 1) << 24) );
-
-            if ( tmp_avgtimes >= pcard->avg_times && loop == pcard->end_channel )
-            {
-                if (	( pcard->avg_rst != 0 )
-					&&	( pcard->scan_mode == SCAN_MODE_UNIFORMCONT	) )
-                {
-#ifdef	ENABLE_CONTEXT_TIMER_DIAGS
-					ContextTimer	contextTimer( ip330ISRUniformContContextTimer );
-#endif	//	ENABLE_CONTEXT_TIMER_DIAGS
-					/* Save the current control register settings */
-					UINT16		saved_ctrl = pHardware->controlReg;
-					pHardware->controlReg = (saved_ctrl) & 0xF8FF; /* Disable scan */
-                    while( pHardware->controlReg & 0x0700 )
-					{	/* How long are we stuck in this loop? */
-#ifdef	ENABLE_CONTEXT_TIMER_DIAGS
-						ContextTimer	contextTimer( ip330ISRLoopContextTimer );
-#endif	//	ENABLE_CONTEXT_TIMER_DIAGS
-					}
-
-                    /* Work around hardware bug of uniform continuous mode */
-					pHardware->startChannel = pcard->start_channel;
-					pHardware->controlReg	= saved_ctrl;
-					pHardware->startConvert	= 1;
-                }
-                scanIoRequest(pcard->ioscan);
-            }
-        }
+        data[MAX_IP330_CHANNELS] = buf0_avail | buf1_avail;
+        pcard->wr++;   /* Do we want to check for wrap around, or is that just paranoia? */
+        epicsEventSignal(pcard->data_avail);
     }
     else
     {
@@ -714,11 +687,11 @@ void ip330ISR(void * arg)
     ipmIrqCmd(pcard->carrier, pcard->slot, 0, ipac_irqClear);
     ipmIrqCmd(pcard->carrier, pcard->slot, 0, ipac_irqEnable);
 
-	// Note: It's not good to clear scan mode or set startCovert in the ISR
+	// Note: It's not good to clear scan mode or set startConvert in the ISR
 	// Clearing the scan mode kills the ongoing scan forcing you
 	// to set startConvert again, however, that causes an immediate scan
 	// without waiting for a timeout resulting in roughly 15KHz interrupt rate.
-    //	pHardware->controlReg = saved_ctrl;
+        //  pHardware->controlReg = saved_ctrl;
 	//  pHardware->startConvert = 1;
 }
 
@@ -826,18 +799,36 @@ static const iocshArg ip330CreateArg6 = {"gainH",iocshArgInt};
 static const iocshArg ip330CreateArg7 = {"scanmode",iocshArgString};
 static const iocshArg ip330CreateArg8 = {"timer",iocshArgString};
 static const iocshArg ip330CreateArg9 = {"intvec",iocshArgInt};
+static const iocshArg ip330CreateArg10= { "triggerPV",	iocshArgString };
+static const iocshArg ip330CreateArg11= { "delayPV",		iocshArgString };
+static const iocshArg ip330CreateArg12= { "syncPV",		iocshArgString };
 
-static const iocshArg * const ip330CreateArgs[10] = {
+static const iocshArg * const ip330CreateArgs[13] = {
     &ip330CreateArg0, &ip330CreateArg1, &ip330CreateArg2, &ip330CreateArg3, &ip330CreateArg4,
-    &ip330CreateArg5, &ip330CreateArg6, &ip330CreateArg7, &ip330CreateArg8, &ip330CreateArg9};
+    &ip330CreateArg5, &ip330CreateArg6, &ip330CreateArg7, &ip330CreateArg8, &ip330CreateArg9,
+    &ip330CreateArg10, &ip330CreateArg11, &ip330CreateArg12};
 
 static const iocshFuncDef ip330CreateFuncDef =
-    {"ip330Create",10,ip330CreateArgs};
+    {"ip330Create",13,ip330CreateArgs};
 
 static void ip330CreateCallFunc(const iocshArgBuf *arg)
 {
     ip330Create(arg[0].sval, arg[1].ival, arg[2].ival, arg[3].sval, arg[4].sval,
-                arg[5].ival, arg[6].ival, arg[7].sval, arg[8].sval, arg[9].ival);
+                arg[5].ival, arg[6].ival, arg[7].sval, arg[8].sval, arg[9].ival,
+                arg[10].sval, arg[11].sval, arg[12].sval);
+}
+
+static const iocshArg ip330StartArg0 = { "level",		iocshArgInt };
+
+static const iocshArg * const ip330StartArgs[1] = {
+    &ip330StartArg0};
+
+static const iocshFuncDef ip330StartFuncDef =
+    {"ip330Start",1,ip330StartArgs};
+
+static void ip330StartCallFunc(const iocshArgBuf *arg)
+{
+    ip330SyncObject::StartAll();
 }
 
 // LOCAL void drvIP330Registrar(void) {
@@ -845,9 +836,10 @@ void drvIP330Registrar(void) {
     iocshRegister(&ip330ReportFuncDef,ip330ReportCallFunc); 
     iocshRegister(&ip330StartConvertByNameFuncDef,ip330StartConvertByNameCallFunc);
     iocshRegister(&ip330CreateFuncDef,ip330CreateCallFunc);
+    iocshRegister(&ip330StartFuncDef,ip330StartCallFunc);
 }
 epicsExportRegistrar(drvIP330Registrar);
-
+epicsExportAddress( int, IP330_DRV_DEBUG );
 #endif /* NO_EPICS */
 
 } // extern "C"

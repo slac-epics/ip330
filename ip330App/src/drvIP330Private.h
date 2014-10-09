@@ -16,19 +16,44 @@
 #if EPICS_VERSION>=3 && EPICS_REVISION>=14
 
 #include <epicsMutex.h>
+#include <epicsEvent.h>
 #include <epicsThread.h>
 #include <epicsString.h>
 #include <epicsInterrupt.h>
+#include <dbScan.h>
 #include <cantProceed.h>
 #include <epicsExport.h>
 #include <drvSup.h>
 #include <dbScan.h>
+#include <dbAccess.h>
 #include <ellLib.h>
 
 #include "drvIpac.h"
 
 #include "ptypes.h"
 #include "IP330Constant.h"
+
+// To check ISR timing, define ENABLE_CONTEXT_TIMER_DIAGS
+// and in your IOC, use the diagTimer module including
+// <APP>_DBD += diagTimer.dbd
+// <APP>_LIB += diagTimer
+// Show results via ShowAllContextTimers()
+#undef	ENABLE_CONTEXT_TIMER_DIAGS
+
+#ifndef MAX_IP330_CHANNELS  /* A blatent cheat.  We don't want IP330Constant.h in ip330sync.cpp, but we need these. */
+#define MAX_IP330_CHANNELS		32
+#endif
+#ifndef N_GAINS
+#define N_GAINS				4
+#endif
+#define N_DATABUF                       4
+#define N_DATABUF_MASK                  3
+
+#include "evrTime.h"
+
+#ifdef __cplusplus
+#include "timesync.h"
+#endif /* __cplusplus */
 
 #else
 #error "You need EPICS 3.14 or above because we need OSI support!"
@@ -85,8 +110,15 @@ typedef struct IP330_CARD
     double                      adj_slope[N_GAINS];
     double                      adj_offset[N_GAINS];
 
-    UINT32                      sum_data[MAX_IP330_CHANNELS]; /* The highest byte +1 is number of samples, then lower 24 bits holds summary of up to 255 samples */
+    UINT16                      data[N_DATABUF][MAX_IP330_CHANNELS+1]; /* A queue of received data, last is buf_avail mask */
+    unsigned int                wr, rd;                              /* Pointers to the data */
+    epicsEventId                data_avail;
+    epicsTimeStamp              sum_time;                            /* Timestamp of the value in sum_data. */
+    epicsThreadId               sync_thread;
+
+    UINT32                      sum_data[2][MAX_IP330_CHANNELS]; /* The highest byte +1 is number of samples, then lower 24 bits holds summary of up to 255 samples */
                                                               /* The maximum will be 0xFFFFFF00, so 0xFFFFFFFF is used to indicate no data */
+    int                         sum_wr;         /* Index of sum_data being written */
     IOSCANPVT                   ioscan;         /* Trigger EPICS record */
 
     char                        * cardname;	/* Card identification */
@@ -116,11 +148,36 @@ typedef struct IP330_CARD
     volatile IP330_HW_MAP       *pHardware;	/* controller registers */
 
     char                        debug_msg[DEBUG_MSG_SIZE];
+
+    epicsUInt32                *trig;
+    epicsUInt32                *gen;
+    double                     *delay;
+    char                       *sync;
 } IP330_CARD;
 
 
 #ifdef __cplusplus
 }
+
+class ip330SyncObject :  public SyncObject {
+    public:
+        ip330SyncObject(IP330_CARD *_ip330);
+        ~ip330SyncObject()                 {};
+        DataObject *Acquire(void);
+        int CheckError(DataObject *dobj);
+        const char *Name(void)             { return ip330->cardname; }
+        int Attributes(void)               { return CanSkip; }
+        int CountIncr(DataObject *dobj)    { return 0; }
+        void QueueData(DataObject *dobj, epicsTimeStamp &evt_time);
+        void DebugPrint(DataObject *dobj);
+        static void Init(void);
+        void Wait(void);
+        static void StartAll(void);
+    private:
+        static epicsMutexId    master_lock;
+        IP330_CARD *ip330;
+};
+
 #endif  /* __cplusplus */
 
 #endif
