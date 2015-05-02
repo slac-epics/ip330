@@ -85,14 +85,14 @@ IP330_ID ip330GetByLocation(UINT16 carrier, UINT16 slot)
 /*                                        trgdir could be "Input", "Output" except for "cvtOnExt" which must come with "Input"                                */
 /*                                        AvgxN could be Avg10 means average 10 times, R means reset after average and only applicable to Continuous mode     */
 /*                  char *timer,          "x*y@8MHz", x must be [64,255], y must be [1,65535]                                                                 */
-/*                  UINT8  vector, char *triggerPV, char *delayPV, char *syncPV)                                                                              */
+/*                  UINT8  vector, char *triggerPV, char *delayPV, char *syncPV, int bldID)                                                                   */
 /*  Example:                                                                                                                                                  */
 /*            ip330Create("ip330_1", 0, 0, "0to5D", "ch1-ch10", 0x0, 0x0, "burstCont-Input-Avg10R", "64*2@8MHz", 0x66)                                        */
 /**************************************************************************************************************************************************************/
 
 static void ip330ISR(void * arg);
 
-int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, char * channels, UINT32 gainL, UINT32 gainH, char *scanmode, char * timer, UINT8 vector, char *trigger, char *delay, char *sync)
+int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, char * channels, UINT32 gainL, UINT32 gainH, char *scanmode, char * timer, UINT8 vector, char *trigger, char *delay, char *sync, int bldID)
 {
     DBADDR addr;
     epicsUInt32 *trig, *gen;
@@ -134,6 +134,11 @@ int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, ch
     pcard->gen = gen;
     pcard->delay = dval;
     pcard->sync = sync ? strdup(sync) : strdup("");
+    pcard->bldID = bldID;
+    if (bldID != -1) {
+        static int bldClient = 0;
+        pcard->bldClient = bldClient++;
+    }
     pcard->wr = 0;
     pcard->rd = 0;
 
@@ -208,6 +213,24 @@ int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, ch
         errlogPrintf ("ip330Create: adcrange %s is illegal for device %s\n", adcrange, cardname);
         status = -1;
         goto FAIL;
+    }
+    switch (pcard->inp_range) {
+    case ADC_RANGE_B5V:
+        pcard->eslo = 10.0 / (double) 0x10000;
+        pcard->eoff = -5.0;
+        break;
+    case ADC_RANGE_B10V:
+        pcard->eslo = 20.0 / (double) 0x10000;
+        pcard->eoff = -10.0;
+        break;
+    case ADC_RANGE_U5V:
+        pcard->eslo = 5.0 / (double) 0x10000;
+        pcard->eoff = 0.0;
+        break;
+    case ADC_RANGE_U10V:
+        pcard->eslo = 10.0 / (double) 0x10000;
+        pcard->eoff = 0.0;
+        break;
     }
 
     /* Check scan channel range */
@@ -802,20 +825,21 @@ static const iocshArg ip330CreateArg9 = {"intvec",iocshArgInt};
 static const iocshArg ip330CreateArg10= { "triggerPV",	iocshArgString };
 static const iocshArg ip330CreateArg11= { "delayPV",		iocshArgString };
 static const iocshArg ip330CreateArg12= { "syncPV",		iocshArgString };
+static const iocshArg ip330CreateArg13= { "bldID",		iocshArgInt };
 
-static const iocshArg * const ip330CreateArgs[13] = {
+static const iocshArg * const ip330CreateArgs[14] = {
     &ip330CreateArg0, &ip330CreateArg1, &ip330CreateArg2, &ip330CreateArg3, &ip330CreateArg4,
     &ip330CreateArg5, &ip330CreateArg6, &ip330CreateArg7, &ip330CreateArg8, &ip330CreateArg9,
-    &ip330CreateArg10, &ip330CreateArg11, &ip330CreateArg12};
+    &ip330CreateArg10, &ip330CreateArg11, &ip330CreateArg12, &ip330CreateArg13};
 
 static const iocshFuncDef ip330CreateFuncDef =
-    {"ip330Create",13,ip330CreateArgs};
+    {"ip330Create",14,ip330CreateArgs};
 
 static void ip330CreateCallFunc(const iocshArgBuf *arg)
 {
     ip330Create(arg[0].sval, arg[1].ival, arg[2].ival, arg[3].sval, arg[4].sval,
                 arg[5].ival, arg[6].ival, arg[7].sval, arg[8].sval, arg[9].ival,
-                arg[10].sval, arg[11].sval, arg[12].sval);
+                arg[10].sval, arg[11].sval, arg[12].sval, arg[13].ival);
 }
 
 static const iocshArg ip330StartArg0 = { "level",		iocshArgInt };

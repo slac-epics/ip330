@@ -1,6 +1,9 @@
 #define _NO_IP330_STATIC_
 #include"drvIP330Private.h"
+#include"bldPvClient.h"
 #include<stdio.h>
+#include<string.h>
+#include<math.h>
 
 #define IP330_THREAD_PRIORITY (epicsThreadPriorityMedium)
 #define IP330_THREAD_STACK	(0x20000)
@@ -68,7 +71,7 @@ static ContextTimerMax ip330ISRUniformContContextTimer( "ip330ISRUniformCont" );
 void ip330SyncObject::QueueData(DataObject *dobj, epicsTimeStamp &evt_time)
 {
     int loop, wr = ip330->sum_wr;
-    volatile IP330_HW_MAP	*	pHardware = ip330->pHardware;	/* controller registers */
+    volatile IP330_HW_MAP	*pHardware = ip330->pHardware;	/* controller registers */
     UINT16 *data = (UINT16 *)dobj->data;
 
     /* Load sum_data, if reach avg_times and cont. mode needs reset, stop scan */
@@ -118,11 +121,46 @@ void ip330SyncObject::QueueData(DataObject *dobj, epicsTimeStamp &evt_time)
             /* OK, make this available for the reader! */
             epicsMutexLock(ip330->lock);
             ip330->sum_time = evt_time;
+            if (ip330->bldID)
+                SendBld(wr);
             ip330->sum_wr = 1 - wr;
             epicsMutexUnlock(ip330->lock);
             scanIoRequest(ip330->ioscan);
         }
     }
+}
+
+void ip330SyncObject::SendBld(int wr)
+{
+    char buf[16*sizeof(double) + sizeof(int)];
+    int off = 0;
+    int loop, i, cnt;
+    double v;
+
+    cnt = ip330->end_channel + 1 - ip330->start_channel;
+    memcpy(&buf[off], &cnt, sizeof(int));
+    off += sizeof(int);
+    for(i = 0, loop = ip330->start_channel; loop <= ip330->end_channel; i++, loop++) {
+        UINT32	tmp = ip330->sum_data[wr][loop];
+
+        if(tmp == 0xFFFFFFFF) {
+            v = NAN;
+            memcpy(&buf[off], &v, sizeof(double));
+            off += sizeof(double);
+            continue;
+        }
+
+        double	tmp_sum		 = tmp & 0x00FFFFFF;
+	double	tmp_avgtimes = ( (tmp & 0xFF000000) >> 24 ) + 1;
+	double	value		 = ip330->adj_slope[ip330->gain[loop]]
+                                    * ( tmp_sum/tmp_avgtimes + ip330->adj_offset[ip330->gain[loop]] );
+        int pvalue = static_cast<int>( value );
+        v = pvalue * ip330->eslo + ip330->eoff;
+        memcpy(&buf[off], &v, sizeof(double));
+        off += sizeof(double);
+    }
+    BldSendPacket(ip330->bldClient, ip330->bldID, 0x10000 | 94, &ip330->sum_time, &buf,
+                  sizeof(unsigned int) + sizeof(double) * cnt);
 }
 
 void ip330SyncObject::DebugPrint(DataObject *dobj)
