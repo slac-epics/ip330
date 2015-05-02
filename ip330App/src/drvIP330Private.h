@@ -153,6 +153,9 @@ typedef struct IP330_CARD
     epicsUInt32                *gen;
     double                     *delay;
     char                       *sync;
+    int                         bldClient;
+    int                         bldID;
+    double                      eslo, eoff;
 } IP330_CARD;
 
 
@@ -176,6 +179,7 @@ class ip330SyncObject :  public SyncObject {
     private:
         static epicsMutexId    master_lock;
         IP330_CARD *ip330;
+        void SendBld(int wr);
 };
 
 #endif  /* __cplusplus */

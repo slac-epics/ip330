@@ -18,7 +18,7 @@ extern "C" {
 
 typedef struct IP330_CARD * IP330_ID;
 
-int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, char * channels, UINT32 gainL, UINT32 gainH, char *scanmode, char * timer, UINT8 vector, char *trig, char *delay, char *sync);
+int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, char * channels, UINT32 gainL, UINT32 gainH, char *scanmode, char * timer, UINT8 vector, char *trig, char *delay, char *sync, int bldID);
 
 void ip330Configure(IP330_ID pcard);
 void ip330Calibrate(IP330_ID pcard);
