@@ -22,9 +22,12 @@
 #          release ip330-R1-0-1
 #
 #==============================================================
-#    
+#  
+ip330-R2-2-6:   K.Luchini
+                build with ipac-R2-11_1-2 which builds for all targets
+ 
 ip330-R2-2-5:   S.Condamoor: autosaveField added toIP 330BSA.template  for alarm limits;
-                but removed in MAIN_TRUNK and committed without autsave field again per Ernest.
+                but removed in MAIN_TRUNK and committed without autosave field again per Ernest.
 
 ip330-R2-2-4: Build against ipac-R2-11_1-0 which builds for all targets
 
