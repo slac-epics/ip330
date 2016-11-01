@@ -13,9 +13,9 @@ EPICS_BASE=$(EPICS_SITE_TOP)/base/$(BASE_MODULE_VERSION)
 # ===============================================================
 DIAG_TIMER_MODULE_VERSION       = R1.7.0
 IPAC_MODULE_VERSION             = R3.0.0-1.1.4
-EVENT2_MODULE_VERSION           = R4.0.0-4.2.3
+EVENT2_MODULE_VERSION           = R4.0.0-4.2.4
 TIMESYNC_MODULE_VERSION         = R1.1.8
-BLDCLIENT_MODULE_VERSION        = R2.15.0
+BLDCLIENT_MODULE_VERSION        = R2.16.1
 
 # ============================================================
 # External Support module path definitions
