@@ -14,7 +14,7 @@ EPICS_MODULES=$(MODULES_SITE_TOP)
 # Define the version of modules needed by
 # IOC apps or other Support apps
 # =============================================================
-IPAC_MODULE_VERSION=ipac-R2-11_1-2
+IPAC_MODULE_VERSION=R2.11-1.5.0
 
 # ============================================================
 #  IPAC release V2-7 or later is required.

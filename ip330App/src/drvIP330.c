@@ -1,5 +1,5 @@
 /****************************************************************/
-/* $Id: drvIP330.c,v 1.3 2009/02/28 00:04:33 pengs Exp $        */
+/* $Id: drvIP330.c,v 1.4 2010/03/12 01:14:03 pengs Exp $        */
 /* This file implements driver support for IP330 ADC            */
 /* Author: Sheng Peng, pengs@slac.stanford.edu, 650-926-3847    */
 /****************************************************************/
@@ -9,6 +9,9 @@
 
 #include "drvIP330Lib.h"
 #include "drvIP330Private.h"
+#include "epicsThread.h"
+#include "iocsh.h"
+#include <epicsExport.h>
 
 int     IP330_DRV_DEBUG = 1;
 
@@ -719,3 +722,58 @@ static long IP330_EPICS_Report(int level)
     return 0;
 }
 
+#ifndef NO_EPICS
+static const iocshArg ip330ReportArg0 = {"interest", iocshArgInt};
+static const iocshArg * const ip330ReportArgs[1] = {&ip330ReportArg0};
+static const iocshFuncDef ip330ReportFuncDef = {"ip330Report",1,ip330ReportArgs};
+static void ip330ReportCallFunc(const iocshArgBuf *args)
+{
+    IP330_EPICS_Report(args[0].ival);
+}
+
+/* ip330StartConvByName( char *pName); */
+
+static const iocshArg ip330StartConvertByNameArg0 = {"pName",iocshArgPersistentString};
+static const iocshArg * const ip330StartConvertByNameArgs[1] = {
+    &ip330StartConvertByNameArg0 };
+
+static const iocshFuncDef ip330StartConvertByNameFuncDef =
+    {"ip330StartConvertByName",1,ip330StartConvertByNameArgs};
+
+static void ip330StartConvertByNameCallFunc(const iocshArgBuf *arg)
+{
+    ip330StartConvertByName(arg[0].sval);
+}
+
+/* ip330Create( char *pName, unsigned short card, unsigned short slot, char *modeNamer); */
+
+static const iocshArg ip330CreateArg0 = {"pName",iocshArgPersistentString};
+static const iocshArg ip330CreateArg1 = {"card", iocshArgInt};
+static const iocshArg ip330CreateArg2 = {"slot", iocshArgInt};
+static const iocshArg ip330CreateArg3 = {"a2drange",iocshArgString};
+static const iocshArg ip330CreateArg4 = {"channels",iocshArgString};
+static const iocshArg ip330CreateArg5 = {"gainL",iocshArgInt};
+static const iocshArg ip330CreateArg6 = {"gainH",iocshArgInt};
+static const iocshArg ip330CreateArg7 = {"scanmode",iocshArgString};
+static const iocshArg ip330CreateArg8 = {"timer",iocshArgString};
+static const iocshArg ip330CreateArg9 = {"intvec",iocshArgInt};
+
+static const iocshArg * const ip330CreateArgs[14] = {
+    &ip330CreateArg0, &ip330CreateArg1, &ip330CreateArg2, &ip330CreateArg3, &ip330CreateArg4,
+    &ip330CreateArg5, &ip330CreateArg6, &ip330CreateArg7, &ip330CreateArg8, &ip330CreateArg9};
+
+static const iocshFuncDef ip330CreateFuncDef =
+    {"ip330Create",10,ip330CreateArgs};
+
+static void ip330CreateCallFunc(const iocshArgBuf *arg)
+{
+    ip330Create(arg[0].sval, arg[1].ival, arg[2].ival, arg[3].sval, arg[4].sval,
+                arg[5].ival, arg[6].ival, arg[7].sval, arg[8].sval, arg[9].ival);
+}
+void drvIP330Registrar(void) {
+    iocshRegister(&ip330ReportFuncDef,ip330ReportCallFunc);
+    iocshRegister(&ip330CreateFuncDef,ip330CreateCallFunc); 
+}
+epicsExportRegistrar(drvIP330Registrar);
+epicsExportAddress( int, IP330_DRV_DEBUG );
+#endif /* NO_EPICS */

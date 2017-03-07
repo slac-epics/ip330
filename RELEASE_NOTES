@@ -23,6 +23,10 @@
 #
 #==============================================================
 #  
+ip330-R2-3-0:   J. Mock
+                build with ipac R2.11-1.5.0, which builds for all targets
+                Added registrar support so module works with non-RTEMS OS
+
 ip330-R2-2-6:   K.Luchini
                 build with ipac-R2-11_1-2 which builds for all targets
  
