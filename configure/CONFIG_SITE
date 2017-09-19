@@ -9,15 +9,9 @@
 #   CONFIG_SITE.$(EPICS_HOST_ARCH).$(T_A)
 
 # Set this when you only want to compile this application
-<<<<<<< HEAD
 #   for a subset of the cross-compiled target architectures
 #   that Base is built for.
 CROSS_COMPILER_TARGET_ARCHS = RTEMS-beatnik
-=======
-# for a subset of the cross-compiled target architectures
-# that Base is built for.
-#CROSS_COMPILER_TARGET_ARCHS = RTEMS-beatnik
->>>>>>> ip330-R2-3-0
 #CROSS_COMPILER_TARGET_ARCHS = RTEMS-uC5282
 #CROSS_COMPILER_TARGET_ARCHS = RTEMS-pc586
 

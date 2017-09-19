@@ -2,7 +2,6 @@
 # Defines location of external products
 include $(TOP)/RELEASE_SITE
 
-<<<<<<< HEAD
 # ===============================================================
 # Define the version(s) of any other needed modules 
 # ===============================================================
@@ -11,19 +10,6 @@ IPAC_MODULE_VERSION             = R2.8-1.2.2
 EVENT2_MODULE_VERSION           = R4.3.0
 TIMESYNC_MODULE_VERSION         = R1.1.11
 BLDCLIENT_MODULE_VERSION        = R2.18.0
-=======
-# =============================================================
-# Define location of module tree with respect to
-# EPICS_SITE_TOP
-# =============================================================
-EPICS_MODULES=$(MODULES_SITE_TOP)
-
-# =============================================================
-# Define the version of modules needed by
-# IOC apps or other Support apps
-# =============================================================
-IPAC_MODULE_VERSION=R2.11-1.5.0
->>>>>>> ip330-R2-3-0
 
 # ============================================================
 # External Support module path definitions
