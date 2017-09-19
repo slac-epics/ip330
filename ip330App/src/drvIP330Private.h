@@ -68,31 +68,37 @@ extern "C" {
 #endif  /* __cplusplus */
 
 /* Hardware registers for ADC channels */
+/* The IPAC drivers were written for PowerPC which is big-endian. */
+/* Intel uses little-endian. This has an effect on how the */
+/* IPAC driver sees the IPAC in memory. */
+/* To resolve this use compiler */
+/* pre-defined macros such as "__BIG_ENDIAN__" below */
+/* ******************************************************************/
 typedef struct IP330_HW_MAP
 {
-  volatile UINT16   controlReg;		/* board control register */
+  volatile UINT16   controlReg;         /* board control register */
 
-#ifdef	__BIG_ENDIAN__
-  volatile UINT8    timerPrescaler;	/* timer prescaler register */
-  volatile UINT8    intVector;		/* interrupt vector register */
+#ifdef  __BIG_ENDIAN__
+  volatile UINT8    timerPrescaler;     /* timer prescaler register */
+  volatile UINT8    intVector;          /* interrupt vector register */
 #else
-  volatile UINT8    intVector;		/* interrupt vector register */
-  volatile UINT8    timerPrescaler;	/* timer prescaler register */
+  volatile UINT8    intVector;          /* interrupt vector register */
+  volatile UINT8    timerPrescaler;     /* timer prescaler register */
 #endif
-  volatile UINT16   conversionTimer;	/* conversion timer count register */
-#ifdef	__BIG_ENDIAN__
-  volatile UINT8    endChannel;		/* end channel register */
-  volatile UINT8    startChannel;	/* start channel register */
+  volatile UINT16   conversionTimer;    /* conversion timer count register */
+#ifdef  __BIG_ENDIAN__
+  volatile UINT8    endChannel;         /* end channel register */
+  volatile UINT8    startChannel;       /* start channel register */
 #else
-  volatile UINT8    startChannel;	/* start channel register */
-  volatile UINT8    endChannel;		/* end channel register */
+  volatile UINT8    startChannel;       /* start channel register */
+  volatile UINT8    endChannel;         /* end channel register */
 #endif
-  volatile UINT16   newData[2];		/* new data register */
-  volatile UINT16   missedData[2];	/* missed data register */
-  volatile UINT16   startConvert;	/* start conversion register */
-  volatile UINT16   notUsed1[7];	/* not used */
-  volatile UINT8    gain[32];		/* gain array */
-  volatile UINT16   data[32];		/* data area */
+  volatile UINT16   newData[2];         /* new data register */
+  volatile UINT16   missedData[2];      /* missed data register */
+  volatile UINT16   startConvert;       /* start conversion register */
+  volatile UINT16   notUsed1[7];        /* not used */
+  volatile UINT8    gain[32];           /* gain array */
+  volatile UINT16   data[32];           /* data area */
 } IP330_HW_MAP;
 /* We don't use __attribute__ ((packed)) here because it is already naturally aligned */
 /* And packed with -mstrict-align will make access to byte-access, it will hurt */
