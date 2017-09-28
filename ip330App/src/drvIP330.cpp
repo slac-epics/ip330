@@ -1,8 +1,4 @@
 /****************************************************************/
-<<<<<<< HEAD:ip330App/src/drvIP330.cpp
-=======
-/* $Id: drvIP330.c,v 1.4 2010/03/12 01:14:03 pengs Exp $        */
->>>>>>> ip330-R2-3-0:ip330App/src/drvIP330.c
 /* This file implements driver support for IP330 ADC            */
 /* Author: Sheng Peng, pengs@slac.stanford.edu, 650-926-3847    */
 /****************************************************************/
@@ -12,17 +8,12 @@
 
 #include "drvIP330Lib.h"
 #include "drvIP330Private.h"
-<<<<<<< HEAD:ip330App/src/drvIP330.cpp
 #include "devLib.h"
 #include "errlog.h"
 #include "epicsThread.h"
 #include "iocsh.h"
 #include "ContextTimer.h"
-=======
-#include "epicsThread.h"
-#include "iocsh.h"
 #include <epicsExport.h>
->>>>>>> ip330-R2-3-0:ip330App/src/drvIP330.c
 
 extern "C" {
 
@@ -787,7 +778,6 @@ static long ip330Report(int level)
     return 0;
 }
 
-<<<<<<< HEAD:ip330App/src/drvIP330.cpp
 const struct drvet drvIP330 = 
 {
 	2,				/* 2 Table Entries */
@@ -798,20 +788,12 @@ const struct drvet drvIP330 =
 epicsExportAddress(drvet,drvIP330);
 
 #ifndef	NO_EPICS
-/* ip330Report(int interest) */
-=======
-#ifndef NO_EPICS
->>>>>>> ip330-R2-3-0:ip330App/src/drvIP330.c
 static const iocshArg ip330ReportArg0 = {"interest", iocshArgInt};
 static const iocshArg * const ip330ReportArgs[1] = {&ip330ReportArg0};
 static const iocshFuncDef ip330ReportFuncDef = {"ip330Report",1,ip330ReportArgs};
 static void ip330ReportCallFunc(const iocshArgBuf *args)
 {
-<<<<<<< HEAD:ip330App/src/drvIP330.cpp
     ip330Report(args[0].ival);
-=======
-    IP330_EPICS_Report(args[0].ival);
->>>>>>> ip330-R2-3-0:ip330App/src/drvIP330.c
 }
 
 /* ip330StartConvByName( char *pName); */
@@ -840,7 +822,6 @@ static const iocshArg ip330CreateArg6 = {"gainH",iocshArgInt};
 static const iocshArg ip330CreateArg7 = {"scanmode",iocshArgString};
 static const iocshArg ip330CreateArg8 = {"timer",iocshArgString};
 static const iocshArg ip330CreateArg9 = {"intvec",iocshArgInt};
-<<<<<<< HEAD:ip330App/src/drvIP330.cpp
 static const iocshArg ip330CreateArg10= { "triggerPV",	iocshArgString };
 static const iocshArg ip330CreateArg11= { "delayPV",		iocshArgString };
 static const iocshArg ip330CreateArg12= { "syncPV",		iocshArgString };
@@ -853,20 +834,10 @@ static const iocshArg * const ip330CreateArgs[14] = {
 
 static const iocshFuncDef ip330CreateFuncDef =
     {"ip330Create",14,ip330CreateArgs};
-=======
-
-static const iocshArg * const ip330CreateArgs[14] = {
-    &ip330CreateArg0, &ip330CreateArg1, &ip330CreateArg2, &ip330CreateArg3, &ip330CreateArg4,
-    &ip330CreateArg5, &ip330CreateArg6, &ip330CreateArg7, &ip330CreateArg8, &ip330CreateArg9};
-
-static const iocshFuncDef ip330CreateFuncDef =
-    {"ip330Create",10,ip330CreateArgs};
->>>>>>> ip330-R2-3-0:ip330App/src/drvIP330.c
 
 static void ip330CreateCallFunc(const iocshArgBuf *arg)
 {
     ip330Create(arg[0].sval, arg[1].ival, arg[2].ival, arg[3].sval, arg[4].sval,
-<<<<<<< HEAD:ip330App/src/drvIP330.cpp
                 arg[5].ival, arg[6].ival, arg[7].sval, arg[8].sval, arg[9].ival,
                 arg[10].sval, arg[11].sval, arg[12].sval, arg[13].ival);
 }
@@ -890,19 +861,9 @@ void drvIP330Registrar(void) {
     iocshRegister(&ip330StartConvertByNameFuncDef,ip330StartConvertByNameCallFunc);
     iocshRegister(&ip330CreateFuncDef,ip330CreateCallFunc);
     iocshRegister(&ip330StartFuncDef,ip330StartCallFunc);
-=======
-                arg[5].ival, arg[6].ival, arg[7].sval, arg[8].sval, arg[9].ival);
-}
-void drvIP330Registrar(void) {
-    iocshRegister(&ip330ReportFuncDef,ip330ReportCallFunc);
-    iocshRegister(&ip330CreateFuncDef,ip330CreateCallFunc); 
->>>>>>> ip330-R2-3-0:ip330App/src/drvIP330.c
 }
 epicsExportRegistrar(drvIP330Registrar);
 epicsExportAddress( int, IP330_DRV_DEBUG );
 #endif /* NO_EPICS */
-<<<<<<< HEAD:ip330App/src/drvIP330.cpp
 
 } // extern "C"
-=======
->>>>>>> ip330-R2-3-0:ip330App/src/drvIP330.c
