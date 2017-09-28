@@ -21,6 +21,10 @@
 #
 #==============================================================
 #  
+R2.5.0:		Marcio Donadio - Sep 28, 2017
+		- IOC shell function ip330StartConvertByName was created, but
+		  not registered
+
 R2.4.0:		Marcio Donadio
 		- Changes to make code work with both little and big-endian.
 		- EPICS 3.15 and GIT workflow.
