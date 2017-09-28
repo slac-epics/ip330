@@ -773,6 +773,7 @@ static void ip330CreateCallFunc(const iocshArgBuf *arg)
 void drvIP330Registrar(void) {
     iocshRegister(&ip330ReportFuncDef,ip330ReportCallFunc);
     iocshRegister(&ip330CreateFuncDef,ip330CreateCallFunc); 
+    iocshRegister(&ip330StartConvertByNameFuncDef, ip330StartConvertByNameCallFunc);
 }
 epicsExportRegistrar(drvIP330Registrar);
 epicsExportAddress( int, IP330_DRV_DEBUG );
