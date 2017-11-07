@@ -23,6 +23,9 @@
 #
 #==============================================================
 #  
+R2.5.1:		Marcio Donadio - Nov 07, 2017
+		- Using IPAC R2.11-1.5.1
+
 R2.5.0:		Marcio Donadio - Sep 28, 2017
 		- IOC shell function ip330StartConvertByName was created, but
 		  not registered

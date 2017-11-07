@@ -5,7 +5,7 @@ include $(TOP)/RELEASE_SITE
 # ===============================================================
 # Define the version(s) of any other needed modules 
 # ===============================================================
-IPAC_MODULE_VERSION             = R2.8-1.2.2
+IPAC_MODULE_VERSION             = R2.11-1.5.1
 
 # ============================================================
 # External Support module path definitions
