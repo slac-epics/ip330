@@ -1,28 +1,7 @@
-#==============================================================
-#
-#  Name: RELEASE_NOTES
-#
 #  Rem: This files describes release notes for
 #       the Acromag ip330 driver and device support.      
 #
-#  Auth: 29-Aug-2007, Sheng Peng         (PENGS)
-#  Rev:  dd-mmm-yyyy, Reviewer's Name    (USERNAME)
-#--------------------------------------------------------------
-#  Mod:
-#        20-Mar-2010, S. Hoobler         (SONYA);
-#          release ip330-R2-2-0
-#        29-Apr-2009, K. Luchini         (LUCHINI);
-#          release ip330-R2-0-0
-#        21-Feb-2008, K. Luchini         (LUCHINI);
-#          release ip330-R1-0-4
-#        08-Oct-2007, K. Luchini         (LUCHINI):
-#          release ip330-R1-0-3
-#          release ip330-R1-0-2
-#        30-Aug-2007, K. Luchini         (LUCHINI):
-#          release ip330-R1-0-1
-#
-#==============================================================
-#                
+
 ip330-R2-2-3:         Build with ipac-R2-11-lcls1
              
 ip330-R2-2-2:   Build against EPICS R3-14-12 and use ipac-R2-8-lcls8
