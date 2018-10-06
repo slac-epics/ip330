@@ -1,6 +1,38 @@
 #  Rem: This files describes release notes for
 #       the Acromag ip330 driver and device support.      
 #
+<<<<<<< HEAD
+=======
+#  Auth: 29-Aug-2007, Sheng Peng         (PENGS)
+#  Rev:  dd-mmm-yyyy, Reviewer's Name    (USERNAME)
+#--------------------------------------------------------------
+#  Mod:
+#        20-Mar-2010, S. Hoobler         (SONYA);
+#          release ip330-R2-2-0
+#        29-Apr-2009, K. Luchini         (LUCHINI);
+#          release ip330-R2-0-0
+#        21-Feb-2008, K. Luchini         (LUCHINI);
+#          release ip330-R1-0-4
+#        08-Oct-2007, K. Luchini         (LUCHINI):
+#          release ip330-R1-0-3
+#          release ip330-R1-0-2
+#        30-Aug-2007, K. Luchini         (LUCHINI):
+#          release ip330-R1-0-1
+#
+#==============================================================
+#  
+ip330-R2-3-0:   J. Mock
+                build with ipac R2.11-1.5.0, which builds for all targets
+                Added registrar support so module works with non-RTEMS OS
+
+ip330-R2-2-6:   K.Luchini
+                build with ipac-R2-11_1-2 which builds for all targets
+ 
+ip330-R2-2-5:   S.Condamoor: autosaveField added toIP 330BSA.template  for alarm limits;
+                but removed in MAIN_TRUNK and committed without autosave field again per Ernest.
+
+ip330-R2-2-4: Build against ipac-R2-11_1-0 which builds for all targets
+>>>>>>> ip330-R2-3-0
 
 ip330-R2-2-3:         Build with ipac-R2-11-lcls1
              
