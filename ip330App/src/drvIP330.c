@@ -398,6 +398,11 @@ void ip330Calibrate(IP330_ID pcard)
     return;
 }
 
+static inline int readData( volatile IP330_HW_MAP *	pHardware, int index )
+{
+	return pHardware->data[index];
+}
+
 /****************************************************************/
 /* We don't allow change configuration during running so far.   */
 /* If we do, the nornal procedure to call ip330Configure is:    */
@@ -416,7 +421,7 @@ void ip330Calibrate(IP330_ID pcard)
 void ip330Configure(IP330_ID pcard)
 {
     UINT16 tmp_ctrl;
-    int loop, dummy;
+    int loop;
 
     if(!pcard)
     {
@@ -434,8 +439,9 @@ void ip330Configure(IP330_ID pcard)
     /* Clear newdata and misseddata register and data */
     for (loop = 0; loop < MAX_IP330_CHANNELS; loop++)
     {
-        dummy = pcard->pHardware->data[loop];
-        pcard->sum_data[loop] = 0xFFFFFFFF;	/* Mark data is not available */
+	(void) readData( pcard->pHardware, loop );
+        pcard->sum_data[0][loop] = 0xFFFFFFFF;	/* Mark data is not available */
+        pcard->sum_data[1][loop] = 0xFFFFFFFF;
     }
 
     tmp_ctrl = CTRL_REG_STRGHT_BINARY | (pcard->trg_dir<<CTRL_REG_TRGDIR_SHFT) | (pcard->inp_typ<<CTRL_REG_INPTYP_SHFT) | (pcard->scan_mode<<CTRL_REG_SCANMODE_SHFT) | CTRL_REG_INTR_CTRL;
