@@ -23,6 +23,10 @@
 #
 #==============================================================
 #  
+R2.6.0:		Hugo Slepicka - Nov 08, 2017
+		- Adjusted the Header file to be true also for Epics 7.
+		- Using IPAC R2.14-0.1.0
+
 R2.5.2:		Marcio Donadio - Nov 07, 2017
                 - Modified RELEASE files to set according to new standards
 
