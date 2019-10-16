@@ -685,9 +685,13 @@ void ip330StartConvertByName(char * cardname)
 /**************************************************************************************************/
 static  long    IP330_EPICS_Report(int level);
 
+#ifndef USE_TYPED_DRVET
 const struct drvet drvIP330 = {2,                              /*2 Table Entries */
                               (DRVSUPFUN) IP330_EPICS_Report,  /* Driver Report Routine */
                               NULL}; /* Driver Initialization Routine */
+#else
+const drvet drvIP330 = {2, IP330_EPICS_Report, NULL };
+#endif
 
 epicsExportAddress(drvet,drvIP330);
 

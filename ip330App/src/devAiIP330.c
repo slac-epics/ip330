@@ -8,7 +8,7 @@
 
 #include <epicsVersion.h>
 
-#if EPICS_VERSION>=3 && EPICS_REVISION>=14
+#if ((EPICS_VERSION==3 && EPICS_REVISION>=14) || EPICS_VERSION >3)
 #include <epicsExport.h>
 #endif
 
@@ -122,8 +122,10 @@ static int IP330_DevData_Init(dbCommon * precord, char * ioString)
 }
 
 
-static long init_ai( struct aiRecord * pai)
+static long init_ai( struct dbCommon * p)
 {
+    struct aiRecord *pai = (struct aiRecord *)p;
+
     pai->dpvt = NULL;
 
     if (pai->inp.type!=INST_IO)
@@ -132,6 +134,7 @@ static long init_ai( struct aiRecord * pai)
         pai->pact=TRUE;
         return (S_db_badField);
     }
+
     pai->eslo = (pai->eguf - pai->egul)/(float)0x10000;
     pai->roff = 0x0;
 
@@ -148,8 +151,10 @@ static long init_ai( struct aiRecord * pai)
 
 
 /** for sync scan records  **/
-static long ai_ioint_info(int cmd,aiRecord *pai,IOSCANPVT *iopvt)
+static long ai_ioint_info(int cmd,struct dbCommon *p,IOSCANPVT *iopvt)
 {
+    struct aiRecord *pai = (struct aiRecord *)p;
+
     IP330_DEVDATA * pdevdata = (IP330_DEVDATA *)(pai->dpvt);
 
     *iopvt = *ip330GetIoScanPVT(pdevdata->pcard);
@@ -194,6 +199,8 @@ static long ai_lincvt(struct aiRecord   *pai, int after)
         return(0);
 }
 
+
+#ifndef USE_TYPED_DSET
 struct IP330_DEV_SUP_SET
 {
     long            number;
@@ -204,8 +211,17 @@ struct IP330_DEV_SUP_SET
     DEVSUPFUN       read_ai;
     DEVSUPFUN       special_linconv;
 } devAiIP330 = {6, NULL, NULL, init_ai, ai_ioint_info, read_ai, ai_lincvt};
+#else
+struct
+{
+    dset          commmon;
+    long(*read_ai)(struct aiRecord *prec);
+    long(*linconv)(struct aiRecord *prec, int after);
+} devAiIP330 = { {6, NULL, NULL, init_ai, ai_ioint_info}, read_ai, ai_lincvt};
+#endif
 
-#if EPICS_VERSION>=3 && EPICS_REVISION>=14
+
+#if ((EPICS_VERSION==3 && EPICS_REVISION>=14) || EPICS_VERSION>3)
 epicsExportAddress(dset, devAiIP330);
 #endif
 

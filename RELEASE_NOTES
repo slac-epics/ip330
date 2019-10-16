@@ -23,6 +23,10 @@
 #
 #==============================================================
 #  
+
+R2.6.1:         Kukhee Kim - Oct 16, 2019
+                - Use type-safe DSET and DRVET
+
 R2.6.0:		Hugo Slepicka - Nov 08, 2017
 		- Adjusted the Header file to be true also for Epics 7.
 		- Using IPAC R2.14-0.1.0
