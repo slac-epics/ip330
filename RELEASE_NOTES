@@ -24,6 +24,9 @@
 #==============================================================
 #  
 
+R2.6.2:         Kukhee Kim - Oct 19, 2019
+                - Using IPAC R2.14-0.2.0 
+
 R2.6.1:         Kukhee Kim - Oct 16, 2019
                 - Use type-safe DSET and DRVET
                 - build with IPAC R2.14-0.2.0
