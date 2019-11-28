@@ -440,8 +440,7 @@ void ip330Configure(IP330_ID pcard)
     for (loop = 0; loop < MAX_IP330_CHANNELS; loop++)
     {
 	(void) readData( pcard->pHardware, loop );
-        pcard->sum_data[0][loop] = 0xFFFFFFFF;	/* Mark data is not available */
-        pcard->sum_data[1][loop] = 0xFFFFFFFF;
+        pcard->sum_data[loop] = 0xFFFFFFFF;	/* Mark data is not available */
     }
 
     tmp_ctrl = CTRL_REG_STRGHT_BINARY | (pcard->trg_dir<<CTRL_REG_TRGDIR_SHFT) | (pcard->inp_typ<<CTRL_REG_INPTYP_SHFT) | (pcard->scan_mode<<CTRL_REG_SCANMODE_SHFT) | CTRL_REG_INTR_CTRL;
