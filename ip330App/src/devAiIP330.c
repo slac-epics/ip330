@@ -12,6 +12,7 @@
 #include <epicsExport.h>
 #endif
 
+#include "errlog.h"
 #include <devLib.h>
 #include <dbAccess.h>
 #include <dbScan.h>

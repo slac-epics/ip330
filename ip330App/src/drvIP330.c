@@ -11,6 +11,7 @@
 #include "drvIP330Private.h"
 #include "epicsThread.h"
 #include "iocsh.h"
+#include "errlog.h"
 #include <epicsExport.h>
 
 int     IP330_DRV_DEBUG = 1;
