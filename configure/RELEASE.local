@@ -19,7 +19,7 @@
 # Don't set your version to anything such as "test" that
 # could match a directory name.
 # ==========================================================
-IPAC_MODULE_VERSION = R2.15-1.0.0
+IPAC_MODULE_VERSION = R2.15-1.0.1
 
 # ==========================================================
 # Define module paths using pattern
