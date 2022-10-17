@@ -80,7 +80,7 @@ IP330_ID ip330GetByLocation(UINT16 carrier, UINT16 slot)
 /*            ip330Create("ip330_1", 0, 0, "0to5D", "ch1-ch10", 0x0, 0x0, "burstCont-Input-Avg10R", "64*2@8MHz", 0x66)                                        */
 /**************************************************************************************************************************************************************/
 
-static void ip330ISR(int arg);
+static void ip330ISR(void *arg);
 int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, char * channels, UINT32 gainL, UINT32 gainH, char *scanmode, char * timer, UINT8 vector)
 {
     int status, loop;
@@ -282,7 +282,7 @@ int ip330Create (char *cardname, UINT16 carrier, UINT16 slot, char *adcrange, ch
     ellAdd( (ELLLIST *)&ip330_card_list, (ELLNODE *)pcard);
 
     /* Install ISR */
-    if(ipmIntConnect(carrier, slot, vector, ip330ISR, (int)pcard))
+    if(ipmIntConnect(carrier, slot, vector, ip330ISR, pcard))
     {
         errlogPrintf ("ip330Create: intConnect failed for device %s\n", cardname);
         status = -1;
@@ -540,7 +540,7 @@ IOSCANPVT * ip330GetIoScanPVT(IP330_ID pcard)
 /* Read data from mailbox,  check dual level buffer if needed          */
 /* Put data into sum_data, stop scan and trigger record scan if needed */
 /***********************************************************************/
-static void ip330ISR(int arg)
+static void ip330ISR(void *arg)
 {
     int loop;
     UINT32 newdata_flag, misseddata_flag;
